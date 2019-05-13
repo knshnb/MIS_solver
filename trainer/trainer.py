@@ -31,7 +31,7 @@ class Trainer:
                 
                 rewards[n] = reward
             if print_log: print(rewards)
-            reward_sum += rewards.sum()
+            reward_sum += rewards.detach().numpy().sum()
             reward_mean = reward_sum / ((epoch + 1) * batch)
 
             loss = - ((rewards - reward_mean) * log_probs).mean()

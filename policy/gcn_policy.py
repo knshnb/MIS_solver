@@ -1,3 +1,4 @@
+import torch
 from environ.mis_env import MISEnv
 from config import *
 import numpy as np
@@ -51,7 +52,6 @@ class GCNPolicy:
         return v, prob[v, 0]
 
     def act(self, adj):
-        # ba = self.best_act(adj)
-        # return (ba, xp.array(1, dtype=xp.float32)) if ba != -1 else self.predict_act(adj)
-        return self.predict_act(adj)
-    
+        ba = self.best_act(adj)
+        return (ba, torch.tensor(1.)) if ba != -1 else self.predict_act(adj)
+        # return self.predict_act(adj)

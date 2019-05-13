@@ -1,3 +1,3 @@
 use_dense = True
 use_gpu = False
-normalize_adj = True
+normalize_adj = False
