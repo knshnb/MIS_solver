@@ -20,7 +20,7 @@ def calc_B(adj):
     D = xp.diag(1 / xp.sqrt(xp.sum(adj, axis=0)))
     return D.dot(adj.dot(D)).astype(xp.float32)
 
-class GCNPolicy:
+class GNNPolicy:
     def __init__(self, gcn):
         self.model = gcn
         if use_gpu:
