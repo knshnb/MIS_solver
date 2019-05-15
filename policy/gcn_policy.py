@@ -52,6 +52,6 @@ class GCNPolicy:
         return v, prob[v, 0]
 
     def act(self, adj):
-        ba = self.best_act(adj)
-        return (ba, torch.tensor(1.)) if ba != -1 else self.predict_act(adj)
-        # return self.predict_act(adj)
+        # ba = self.best_act(adj)
+        # return (ba, torch.tensor(1.)) if ba != -1 else self.predict_act(adj)
+        return self.predict_act(adj)
