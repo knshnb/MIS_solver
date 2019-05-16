@@ -19,6 +19,7 @@ class Trainer:
         self.env.set_graph(adj)
         reward_sum = 0
         for epoch in range(iter):
+            self.optimizer.zero_grad()
             rewards = torch.empty(batch)
             log_probs = torch.zeros(batch)
             for n in range(batch):
