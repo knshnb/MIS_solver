@@ -6,7 +6,7 @@ from gin.gin import GIN3
 ALPHA = 50
 TAU = 2
 class MCTSNode:
-    gnn = GIN3()
+    gnn = GIN3(layer_num=2)
     def __init__(self, graph, parent=None):
         n, _ = graph.shape
         self.graph = graph
@@ -14,7 +14,7 @@ class MCTSNode:
         self.children = [None for _ in range(n)]
 
         self.visit_cnt = np.zeros(n)
-        self.rewards = []
+        self.max_return = -1
         self.policy = None
         self.value = None
 
@@ -30,7 +30,8 @@ class MCTSNode:
 
         for i in range(len(self.children)):
             if self.children[i] is not None:
-                self.value[i] = np.mean(self.children[i].rewards)
+                assert self.children[i].max_return != -1
+                self.value[i] = self.children[i].max_return
 
         ucb = self.value + ALPHA * self.policy / (1 + self.visit_cnt)
         return np.argmax(ucb)
@@ -56,10 +57,9 @@ def rollout(root_node):
         v = node.best_child()
         node = node.explore(v)
         ans += 1
-    node.rewards.append(0)
     for r in range(ans):
+        node.max_return = max(node.max_return, r)
         node = node.parent
-        node.rewards.append(r + 1)
     assert node is root_node
     return ans
 

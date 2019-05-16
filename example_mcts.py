@@ -4,9 +4,9 @@ from environ.mis_env import MISEnv
 from mcts.mcts_node import MCTSNode, rollout, search
 from utils.graph import read_graph
 
-def mcts(root_node, iter_num=100):
+def mcts(root_node, iter_p=2):
     n, _ = root_node.graph.shape
-    for i in range(iter_num):
+    for i in range(n * iter_p):
         rollout(root_node)
     action = np.random.choice(n, p=root_node.pi())
     return action
@@ -26,17 +26,20 @@ def train(graph):
     
     loss = 0
     for i in range(len(nodes)):
-        idx = np.random.randint(len(nodes))
-        node = nodes[idx]
-        p, v = MCTSNode.gnn(node.graph)
+        optimizer.zero_grad()
+        for batch in range(10):
+            idx = np.random.randint(len(nodes))
+            node = nodes[idx]
+            p, v = MCTSNode.gnn(node.graph)
 
-        mse = torch.nn.MSELoss()
-        cross_entropy = torch.nn.CrossEntropyLoss()
-        loss = mse(v, torch.tensor(node.value))
-        pi = torch.tensor(node.pi(), dtype=torch.float32)
-        loss -= (pi * torch.log(p)).sum()
-    loss.backward()
-    optimizer.step()
+            mse = torch.nn.MSELoss()
+            pi = torch.tensor(node.pi(), dtype=torch.float32)
+            a = mse(v, torch.tensor(node.value))
+            # TODO: use cross entropy loss for b
+            b = mse(pi, p)
+            loss = a + b
+        loss.backward()
+        optimizer.step()
 
 if __name__ == "__main__":
     # graph = np.array([
