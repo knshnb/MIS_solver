@@ -1,71 +1,55 @@
 import copy
 import numpy as np
+import torch
 from environ.mis_env import MISEnv
 from gin.gin import GIN3
 
-ALPHA = 0.5
-TAU = 2
+# p(s) = gnn(s).policy
+# v(s) = gnn(s).value
+INF = 100000  # Q(s,a)の初期値をINF + v(s)[a]で初期化
+ALPHA = 0.5  # ucb(s,a) = Q(s,a) + ALPHA * |V| * P(s,a) / (1 + N(s,a))
+TAU = 0.5  # N(s,a)からpiを求めるときの温度
+# TODO: TAUを学習が進むに連れて小さくしていく
+
 class MCTSNode:
-    gnn = GIN3(layer_num=2)
-    def __init__(self, graph, parent=None):
+    @staticmethod
+    def set_gnn(gnn):
+        MCTSNode.gnn = gnn
+
+    def __init__(self, graph, idx=-1, parent=None):
         n, _ = graph.shape
         self.graph = graph
         self.parent = parent
         self.children = [None for _ in range(n)]
+        self.idx = idx
 
-        self.visit_cnt = np.zeros(n)
+        self.visit_cnt = np.zeros(n, dtype=np.float32)
         self.max_return = -1
-        self.policy = None
-        self.value = None
+        if not self.is_end():
+            with torch.no_grad():
+                self.P, self.Q = MCTSNode.gnn(self.graph)
+            self.P = self.P.detach().numpy()
+            self.Q = self.Q.detach().numpy()
+            self.Q += INF
 
-    def is_leaf(self):
+    def is_end(self):
         return self.graph.shape[0] == 0
 
+    def state_value(self):
+        if self.is_end():
+            return 0.
+        ret = self.Q.max()
+        assert ret >= INF
+        return ret - INF
+        # return 0. if self.is_end() else self.Q.max()
+
+    # selfがNoneでないときのみ呼ばれる
     def best_child(self):
-        if self.policy is None:
-            assert self.value is None
-            self.policy, self.value = MCTSNode.gnn(self.graph)
-            self.policy = self.policy.detach().numpy()
-            self.value = self.value.detach().numpy()
-
-        for i in range(len(self.children)):
-            if self.children[i] is not None:
-                assert self.children[i].max_return != -1
-                self.value[i] = self.children[i].max_return
-
         n, _ = self.graph.shape
-        ucb = self.value + ALPHA * n * self.policy / (1 + self.visit_cnt)
+        ucb = self.Q + ALPHA * n * self.P / (1 + self.visit_cnt)
         return np.argmax(ucb)
-
-    def explore(self, v):
-        self.visit_cnt[v] += 1
-        if self.children[v] is None:
-            env = MISEnv()
-            env.set_graph(self.graph)
-            next_graph, r, done, info = env.step(v)
-            self.children[v] = MCTSNode(next_graph, parent=self)
-        return self.children[v]
 
     def pi(self):
         pow_tau = np.power(self.visit_cnt, 1 / TAU)
         assert (self.visit_cnt >= 0).all()
         return pow_tau / pow_tau.sum()
-
-def rollout(root_node):
-    node = root_node
-    ans = 0
-    while not node.is_leaf():
-        v = node.best_child()
-        node = node.explore(v)
-        ans += 1
-    for r in range(ans):
-        node.max_return = max(node.max_return, r)
-        node = node.parent
-    assert node is root_node
-    return ans
-
-def search(root_node, iter_num=100):
-    ans = []
-    for i in range(iter_num):
-        ans.append(rollout(root_node))
-    return ans
