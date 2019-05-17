@@ -4,6 +4,8 @@ from environ.mis_env import MISEnv
 from mcts.mcts_node import MCTSNode, INF
 from utils.graph import read_graph
 
+EPS = 1e-30  # cross entropy lossをpi * log(EPS + p)で計算 (log(0)回避)
+
 class MCTS:
     def __init__(self, gnn):
         MCTSNode.set_gnn(gnn)
@@ -13,8 +15,22 @@ class MCTS:
     # parantのQ(s,a), N(s,a)を更新
     def update_parant(self, node, V):
         par = node.parent
-        par.Q[node.idx] = V if par.Q[node.idx] >= INF else max(par.Q[node.idx], V)
+        if par.Q[node.idx] >= INF:
+            # Qが初期値から一度も更新されていない
+            par.Q[node.idx] = V
+        else:
+            self.update_Q(par, V, node.idx, method="mean")
         par.visit_cnt[node.idx] += 1
+
+    def update_Q(self, node, V, idx, method="mean"):
+        if method == "mean":
+            node.Q[idx] = (node.Q[idx] * node.visit_cnt[idx] + V) / (node.visit_cnt[idx] + 1)
+        elif method == "max":
+            node.Q[idx] = max(node.Q[idx], V)
+        elif method == "min":
+            node.Q[idx] = min(node.Q[idx], V)
+        else:
+            assert False
 
     def rollout(self, root_node, stop_at_leaf=True):
         node = root_node
@@ -44,11 +60,11 @@ class MCTS:
     def get_improved_pi(self, graph, iter_p=5):
         root_node = MCTSNode(graph)
         assert not root_node.is_end()
-        for i in range(iter_p * 2):
+        for i in range(graph.shape[0] * iter_p):
             self.rollout(root_node)
         return root_node.pi()
 
-    def train(self, graph):
+    def train(self, graph, batch_size=10):
         mse = torch.nn.MSELoss()
         env = MISEnv()
         env.set_graph(graph)
@@ -69,16 +85,17 @@ class MCTS:
         T = len(graphs)
         for i in range(T):
             self.optimizer.zero_grad()
-            for batch in range(10):
+            loss = torch.Tensor([0])
+            for batch in range(batch_size):
                 idx = np.random.randint(T)
                 p, v = MCTSNode.gnn(graphs[idx])
 
                 n, _ = graphs[idx].shape
-                z = torch.tensor(T - idx)
-                # 解のサイズの方は適当に(n / 3)で割ってスケールを合わせておく
-                loss = mse(z, v[actions[idx]]) / (max(1., n / 3)) + mse(torch.tensor(pis[idx]), p)
-                # TODO: use cross entropy loss
-                loss.backward()
+                z = torch.as_tensor(T - idx)
+                # MSE(z,v)の方は適当にz^2で割ってスケールを合わせておく
+                loss += mse(z, v[actions[idx]]) / z.pow(2) - (torch.as_tensor(pis[idx]) * torch.log(p + EPS)).sum()
+            loss /= batch_size
+            loss.backward()
             self.optimizer.step()
 
     def search(self, graph, iter_num=100):

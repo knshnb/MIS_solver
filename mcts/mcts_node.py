@@ -6,7 +6,7 @@ from gin.gin import GIN3
 
 # p(s) = gnn(s).policy
 # v(s) = gnn(s).value
-INF = 100000  # Q(s,a)の初期値をINF + v(s)[a]で初期化
+INF = 1e10  # Q(s,a)の初期値をINF + v(s)[a]で初期化
 ALPHA = 0.5  # ucb(s,a) = Q(s,a) + ALPHA * |V| * P(s,a) / (1 + N(s,a))
 TAU = 0.5  # N(s,a)からpiを求めるときの温度
 # TODO: TAUを学習が進むに連れて小さくしていく
