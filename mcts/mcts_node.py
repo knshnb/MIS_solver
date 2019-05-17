@@ -3,7 +3,7 @@ import numpy as np
 from environ.mis_env import MISEnv
 from gin.gin import GIN3
 
-ALPHA = 50
+ALPHA = 0.5
 TAU = 2
 class MCTSNode:
     gnn = GIN3(layer_num=2)
@@ -33,7 +33,8 @@ class MCTSNode:
                 assert self.children[i].max_return != -1
                 self.value[i] = self.children[i].max_return
 
-        ucb = self.value + ALPHA * self.policy / (1 + self.visit_cnt)
+        n, _ = self.graph.shape
+        ucb = self.value + ALPHA * n * self.policy / (1 + self.visit_cnt)
         return np.argmax(ucb)
 
     def explore(self, v):

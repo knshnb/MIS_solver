@@ -23,8 +23,6 @@ def train(graph):
         action = mcts(node)
         nodes.append(node)
         graph, reward, done, info = env.step(action)
-    
-    loss = 0
     for i in range(len(nodes)):
         optimizer.zero_grad()
         for batch in range(10):
@@ -38,7 +36,7 @@ def train(graph):
             # TODO: use cross entropy loss for b
             b = mse(pi, p)
             loss = a + b
-        loss.backward()
+            loss.backward()
         optimizer.step()
 
 if __name__ == "__main__":
