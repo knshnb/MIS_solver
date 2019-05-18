@@ -13,7 +13,7 @@ class MCTS_Trainer:
     def __init__(self, gnn):
         MCTSNode.set_gnn(gnn)
         self.optimizer = torch.optim.Adam(gnn.parameters(), lr=0.01)
-        self.alpha = 10
+        self.alpha = 4
         self.tau = 0.5
 
     # n_rewards: nodeのQを計算するときに正規化する指標に使う過去のreward. 正規化されたもの

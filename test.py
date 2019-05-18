@@ -11,8 +11,8 @@ if __name__ == '__main__':
     graph0.add_edge(2, 3)
     graph0.build()
 
-    graph = read_graph("data/random/100_250_0").adj
-    graph1 = read_graph("data/random/100_250_1").adj
+    graph1 = read_graph("data/random/100_250_0").adj
+    # graph1 = read_graph("data/random/100_250_1").adj
     # graph = graph0.adj
 
     gnn = GIN3(layer_num=2)

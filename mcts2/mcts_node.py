@@ -51,7 +51,7 @@ class MCTSNode:
 
     def best_ucb(self, alpha, n_rewards):
         self.update_Q(n_rewards)
-        ucb = self.Q + alpha * self.P / self.cnt
+        ucb = self.Q + alpha * self.P * np.sqrt(self.cnt.sum()) / (1 + self.cnt)
         # print(ucb)
         return np.argmax(ucb)
     
