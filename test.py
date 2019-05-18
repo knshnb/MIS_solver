@@ -12,13 +12,15 @@ if __name__ == '__main__':
     graph0.build()
 
     graph = read_graph("data/random/100_250_0").adj
+    graph1 = read_graph("data/random/100_250_1").adj
     # graph = graph0.adj
 
     gnn = GIN3(layer_num=2)
     trainer = MCTS_Trainer(gnn)
     
+    print("no train:", trainer.test(graph1))
     for i in range(1000):
         print("epoch:", i + 1)
-        trainer.train(graph)
-        print("ans:", trainer.test(graph))
+        trainer.train(graph1)
+        print("ans:", trainer.test(graph1))
     
