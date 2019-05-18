@@ -3,38 +3,26 @@ import torch
 from environ.mis_env import MISEnv
 from mcts2.mcts_node import MCTSNode
 
-class RewardContainer:
-    def __init__(self):
-        self.clear()
-
-    def clear(self):
-        self.x2 = 0
-        self.x = 0
-        self.n = 0
-
-    def add(self, x):
-        self.x2 += x * x
-        self.x += x
-        self.n += 1
-        if self.n == 1:
-            return 1
-        m = self.x / self.n
-        s = self.x2 / self.n - m * m
-        return (x - m) / (s ** 0.5 + 1e-5)
+def normalize(arr):
+    if arr == []: return []
+    a = np.array(arr, dtype=np.float32)
+    a = (a - a.mean()) / (a.std() + 1e-5)
+    return a.tolist()
 
 class MCTS_Trainer:
     def __init__(self, gnn):
         MCTSNode.set_gnn(gnn)
         self.optimizer = torch.optim.Adam(gnn.parameters(), lr=0.01)
-        self.rw = RewardContainer()
         self.alpha = 10
         self.tau = 0.5
 
-    def rollout(self, node):
+    # n_rewards: nodeのQを計算するときに正規化する指標に使う過去のreward. 正規化されたもの
+    # idx: 今のrolloutが何番目の試行か。0-indexed
+    def rollout(self, node, n_rewards, idx):
         reward = 0
         while 1:
             if node.is_end(): break
-            v = node.best_ucb(self.alpha)
+            v = node.best_ucb(self.alpha, n_rewards)
             if node.children[v] is None:
                 env = MISEnv()
                 env.set_graph(node.graph)
@@ -43,21 +31,21 @@ class MCTS_Trainer:
             node = node.children[v]
             reward += 1
         # normalize reward
-        reward = self.rw.add(reward)
         while node.parent is not None:
             v = node.idx
             assert v >= 0
             node = node.parent
             node.cnt[v] += 1
-            node.sum[v] += reward
+            node.Qidx[v].append(idx)
+        return reward
     
-    def get_improved_pi(self, graph, k=1):
+    def get_improved_pi(self, graph, k=2):
         root = MCTSNode(graph)
-        # した方がよさそう？
-        self.rw.clear()
+        rewards = []
         assert not root.is_end()
-        for _ in range(graph.shape[0] * k):
-            self.rollout(root)
+        for i in range(graph.shape[0] * k):
+            n_rewards = normalize(rewards)
+            rewards.append(self.rollout(root, n_rewards, i))
         return root.pi(self.tau)
     
     def train(self, graph, batch_size=10):
@@ -78,7 +66,7 @@ class MCTS_Trainer:
             graph, reward, done, info = env.step(action)
         
         T = len(graphs)
-        z = torch.tensor(self.rw.add(reward))
+        z = torch.tensor(1)
         for i in range(T):
             loss = torch.zeros(1)
             for _ in range(batch_size):

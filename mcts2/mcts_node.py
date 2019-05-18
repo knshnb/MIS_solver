@@ -20,8 +20,9 @@ class MCTSNode:
 
         # 各子を何度訪れたか
         self.cnt = np.zeros(n, dtype=np.int)
-        # 各子のscoreの合計
-        self.sum = np.zeros(n, dtype=np.float32)
+        # 将来Qを計算するとき用
+        # これまでのrolloutで何番目のものに寄与したかを保持しておく
+        self.Qidx = [[] for _ in range(n)]
 
         if not self.is_end():
             # Pは各子を選ぶ確率。Vは各子の評価値
@@ -31,16 +32,25 @@ class MCTSNode:
             self.P = self.P.detach().numpy()
             V = V.detach().numpy()
             self.cnt += 1
-            self.sum += (V - V.mean()) / (V.std() + 1e-5)
+            # ここはnumpyなのでstd()がバグらない
+            self.Qini = (V - V.mean()) / (V.std() + 1e-5)
 
-    def update_Q(self): 
-        self.Q = self.sum / self.cnt
+    def update_Q(self, n_rewards):
+        self.Qtmp = [[self.Qini[i]] for i in range(self.n)]
+        for i in range(self.n):
+            for j in self.Qidx[i]:
+                self.Qtmp[i].append(n_rewards[j])
+        for i in range(self.n):
+            assert self.cnt[i] == len(self.Qtmp[i])
+        self.Q = np.empty(self.n, dtype=np.float32)
+        for i in range(self.n):
+            self.Q[i] = sum(self.Qtmp[i])
 
     def is_end(self):
         return self.graph.shape[0] == 0
 
-    def best_ucb(self, alpha):
-        self.update_Q()
+    def best_ucb(self, alpha, n_rewards):
+        self.update_Q(n_rewards)
         ucb = self.Q + alpha * self.P / self.cnt
         # print(ucb)
         return np.argmax(ucb)
