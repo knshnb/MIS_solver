@@ -51,12 +51,12 @@ class MCTS_Trainer:
             node.cnt[v] += 1
             node.sum[v] += reward
     
-    def get_improved_pi(self, graph, k=5):
+    def get_improved_pi(self, graph, k=1):
         root = MCTSNode(graph)
         # した方がよさそう？
         self.rw.clear()
         assert not root.is_end()
-        for i in range(graph.shape[0] * k):
+        for _ in range(graph.shape[0] * k):
             self.rollout(root)
         return root.pi(self.tau)
     

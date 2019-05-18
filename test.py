@@ -11,7 +11,8 @@ if __name__ == '__main__':
     graph0.add_edge(2, 3)
     graph0.build()
 
-    graph = graph0.adj
+    graph = read_graph("data/random/100_250_0").adj
+    # graph = graph0.adj
 
     gnn = GIN3(layer_num=2)
     trainer = MCTS_Trainer(gnn)
