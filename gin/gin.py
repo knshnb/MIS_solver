@@ -53,5 +53,6 @@ class GIN3(torch.nn.Module):
             # x = torch.nn.functional.dropout(x, self.dropout, training=self.training)
         
         policy = torch.nn.functional.softmax(self.policy_output_layer(x, adj), dim=0)[:, 0]
-        value = 1 + torch.nn.functional.relu(self.value_output_layer(x, adj))[:, 0]
+        value = self.value_output_layer(x, adj)[:, 0]
+        # TODO: valueを正規化して出力したい！
         return policy, value

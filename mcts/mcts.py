@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 from environ.mis_env import MISEnv
-from mcts.mcts_node import MCTSNode, INF
+from mcts.mcts_node import MCTSNode
 from utils.graph import read_graph
 
 EPS = 1e-30  # cross entropy lossをpi * log(EPS + p)で計算 (log(0)回避)
@@ -15,11 +15,12 @@ class MCTS:
     # parantのQ(s,a), N(s,a)を更新
     def update_parant(self, node, V):
         par = node.parent
-        if par.Q[node.idx] >= INF:
+        normalized_V = par.normalize_reward(V)
+        if par.visit_cnt[node.idx] == 0:
             # Qが初期値から一度も更新されていない
-            par.Q[node.idx] = V
+            par.Q[node.idx] = normalized_V
         else:
-            self.update_Q(par, V, node.idx, method="mean")
+            self.update_Q(par, normalized_V, node.idx, method="mean")
         par.visit_cnt[node.idx] += 1
 
     def update_Q(self, node, V, idx, method="mean"):
@@ -32,7 +33,7 @@ class MCTS:
         else:
             assert False
 
-    def rollout(self, root_node, stop_at_leaf=True):
+    def rollout(self, root_node, stop_at_leaf=False):
         node = root_node
         v = -1
         finish = False
@@ -57,10 +58,10 @@ class MCTS:
         return V
 
     # MCTSによって改善されたpiを返す
-    def get_improved_pi(self, graph, iter_p=5):
-        root_node = MCTSNode(graph)
+    def get_improved_pi(self, root_node, iter_p=2):
         assert not root_node.is_end()
-        for i in range(graph.shape[0] * iter_p):
+        n, _ = root_node.graph.shape
+        for i in range(max(100, n * iter_p)):
             self.rollout(root_node)
         return root_node.pi()
 
@@ -72,11 +73,18 @@ class MCTS:
         graphs = []
         actions = []
         pis = []
+        means = []
+        stds = []
         done = False
         while not done:
             n, _ = graph.shape
-            pi = self.get_improved_pi(graph)
-            action = np.random.choice(n, p=pi)
+            node = MCTSNode(graph)
+            means.append(node.reward_mean)
+            stds.append(node.reward_std)
+            pi = self.get_improved_pi(node)
+            # trainのときはpiに従わずにランダムにサンプリングしたほうが学習しているように見える
+            # action = np.random.choice(n, p=pi)
+            action = np.random.randint(n)
             graphs.append(graph)
             actions.append(action)
             pis.append(pi)
@@ -91,9 +99,9 @@ class MCTS:
                 p, v = MCTSNode.gnn(graphs[idx])
 
                 n, _ = graphs[idx].shape
-                z = torch.as_tensor(T - idx)
-                # MSE(z,v)の方は適当にz^2で割ってスケールを合わせておく
-                loss += mse(z, v[actions[idx]]) / z.pow(2) - (torch.as_tensor(pis[idx]) * torch.log(p + EPS)).sum()
+                # mean, stdを用いて正規化
+                z = torch.tensor(((T - idx) - means[idx]) / stds[idx])
+                loss += mse(z, v[actions[idx]]) - (torch.tensor(pis[idx]) * torch.log(p + EPS)).sum()
             loss /= batch_size
             loss.backward()
             self.optimizer.step()
@@ -102,5 +110,5 @@ class MCTS:
         root_node = MCTSNode(graph)
         ans = []
         for i in range(iter_num):
-            ans.append(self.rollout(root_node, stop_at_leaf=False))
+            ans.append(self.rollout(root_node))
         return ans
