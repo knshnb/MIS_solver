@@ -53,5 +53,5 @@ class GIN3(torch.nn.Module):
             # x = torch.nn.functional.dropout(x, self.dropout, training=self.training)
         
         policy = torch.nn.functional.softmax(self.policy_output_layer(x, adj), dim=0)[:, 0]
-        value = 1 + torch.nn.functional.relu(self.value_output_layer(x, adj))[:, 0]
+        value = torch.nn.functional.relu(self.value_output_layer(x, adj))[:, 0]
         return policy, value

@@ -4,6 +4,8 @@ class MCTSNode:
     @staticmethod
     def set_gnn(gnn):
         MCTSNode.gnn = gnn
+        MCTSNode.newvisit = 0
+        MCTSNode.allvisit = 0
     
     # idx: 親の何番目の子か。親がない場合は-1
     def __init__(self, graph, idx=-1, parent=None, beta=0.3):
@@ -47,10 +49,14 @@ class MCTSNode:
 
     def best_ucb(self, alpha, n_rewards):
         self.update_Q(n_rewards)
+        if self.cnt.max() == self.cnt.min() == 1:
+            MCTSNode.newvisit += 1
+        MCTSNode.allvisit += 1
         k = alpha * np.sqrt(self.cnt.sum()) / (1 + self.cnt)
         ucb = self.Q + k * self.P
-        # print("UCB_DEBUG", k, self.Q, self.P, ucb)
-        # print(ucb)
+        if np.random.random() < 0.00001:
+            print("UCB_DEBUG", k, self.Q, self.P, ucb)
+            print(ucb)
         return np.argmax(ucb)
     
     def pi(self, tau):

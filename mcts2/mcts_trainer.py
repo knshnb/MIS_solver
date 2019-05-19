@@ -15,6 +15,7 @@ def visualize(loss):
 
 def normalize(arr):
     if arr == []: return []
+    if len(arr) == 1: return [1.0]
     a = np.array(arr, dtype=np.float32)
     a = (a - a.mean()) / (a.std() + 1e-5)
     return a.tolist()
@@ -25,6 +26,7 @@ class MCTS_Trainer:
         self.optimizer = torch.optim.Adam(gnn.parameters(), lr=0.01)
         self.alpha = 4
         self.tau = 0.5
+        self.res = []
 
     # n_rewards: nodeのQを計算するときに正規化する指標に使う過去のreward. 正規化されたもの
     # idx: 今のrolloutが何番目の試行か。0-indexed
@@ -76,7 +78,10 @@ class MCTS_Trainer:
             graph, reward, done, info = env.step(action)
         
         T = len(graphs)
-        z = torch.tensor(1.0)
+        self.res.append(reward)
+        z = torch.tensor(normalize(self.res)[-1])
+        print(z)
+        print(MCTSNode.newvisit / MCTSNode.allvisit, MCTSNode.newvisit, MCTSNode.allvisit)
         for i in range(T):
             loss = torch.tensor(0.0)
             for _ in range(batch_size):
@@ -93,9 +98,11 @@ class MCTS_Trainer:
             loss /= batch_size
             self.optimizer.zero_grad()
             loss.backward()
-            inspect_params()
+            if np.random.random() < 0.01:
+                inspect_params()
             self.optimizer.step()
-            inspect_params()
+            if np.random.random() < 0.01:
+                inspect_params()
 
     def test(self, graph):
         env = MISEnv()
