@@ -2,6 +2,16 @@ import numpy as np
 import torch
 from environ.mis_env import MISEnv
 from mcts2.mcts_node import MCTSNode
+from torchviz import make_dot, make_dot_from_trace
+
+def inspect_params():
+    params = list(MCTSNode.gnn.parameters())
+    for param in params:
+        assert not torch.isnan(param.max()).item()
+
+def visualize(loss):
+    make_dot(loss, params=dict(MCTSNode.gnn.named_parameters())).view()
+    exit()
 
 def normalize(arr):
     if arr == []: return []
@@ -39,7 +49,7 @@ class MCTS_Trainer:
             node.Qidx[v].append(idx)
         return reward
     
-    def get_improved_pi(self, graph, k=5):
+    def get_improved_pi(self, graph, k=2):
         root = MCTSNode(graph)
         rewards = []
         assert not root.is_end()
@@ -66,24 +76,26 @@ class MCTS_Trainer:
             graph, reward, done, info = env.step(action)
         
         T = len(graphs)
-        z = torch.tensor(1)
+        z = torch.tensor(1.0)
         for i in range(T):
-            loss = torch.zeros(1)
+            loss = torch.tensor(0.0)
             for _ in range(batch_size):
                 idx = np.random.randint(T)
                 n, _ = graphs[idx].shape
                 p, v = MCTSNode.gnn(graphs[idx])
-                if n == 1:
-                    # make v zero ()
-                    v = (v - v.mean()) / 1e-5
-                else:
-                    v = (v - v.mean()) / (v.std() + 1e-5)
+                # torchのstdを使うと逆伝播でnanが出ることがある
+                # assert not torch.isnan(v.std(unbiased=False)).item()
+                # v = (v - v.mean()) / (v.std(unbiased=False) + 1e-5)
+                std = v.detach().numpy().std() + 1e-5
+                v = (v - v.mean()) / std
                 loss += mse(z, v[actions[idx]])
                 loss -= (torch.Tensor(pis[idx]) * torch.log(p + 1e-5)).sum()
             loss /= batch_size
             self.optimizer.zero_grad()
             loss.backward()
+            inspect_params()
             self.optimizer.step()
+            inspect_params()
 
     def test(self, graph):
         env = MISEnv()

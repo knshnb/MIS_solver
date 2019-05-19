@@ -4,10 +4,6 @@ class MCTSNode:
     @staticmethod
     def set_gnn(gnn):
         MCTSNode.gnn = gnn
-
-    @staticmethod
-    def get_gnn():
-        return MCTSNode.gnn
     
     # idx: 親の何番目の子か。親がない場合は-1
     def __init__(self, graph, idx=-1, parent=None, beta=0.3):
@@ -44,7 +40,7 @@ class MCTSNode:
             assert self.cnt[i] == len(self.Qtmp[i])
         self.Q = np.empty(self.n, dtype=np.float32)
         for i in range(self.n):
-            self.Q[i] = sum(self.Qtmp[i])
+            self.Q[i] = sum(self.Qtmp[i]) / self.cnt[i]
 
     def is_end(self):
         return self.graph.shape[0] == 0

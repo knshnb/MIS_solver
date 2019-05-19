@@ -18,7 +18,7 @@ if __name__ == '__main__':
     gnn = GIN3(layer_num=2)
     trainer = MCTS_Trainer(gnn)
     
-    print("no train:", trainer.test(graph1))
+    # print("no train:", trainer.test(graph1))
     for i in range(1000):
         print("epoch:", i + 1)
         trainer.train(graph1)
