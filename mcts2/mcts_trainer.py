@@ -39,7 +39,7 @@ class MCTS_Trainer:
             node.Qidx[v].append(idx)
         return reward
     
-    def get_improved_pi(self, graph, k=2):
+    def get_improved_pi(self, graph, k=5):
         root = MCTSNode(graph)
         rewards = []
         assert not root.is_end()

@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     graph1 = read_graph("data/random/100_250_0").adj
     # graph1 = read_graph("data/random/100_250_1").adj
-    # graph = graph0.adj
+    # graph1 = graph0.adj
 
     gnn = GIN3(layer_num=2)
     trainer = MCTS_Trainer(gnn)

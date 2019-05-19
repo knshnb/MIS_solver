@@ -10,7 +10,7 @@ class MCTSNode:
         return MCTSNode.gnn
     
     # idx: 親の何番目の子か。親がない場合は-1
-    def __init__(self, graph, idx=-1, parent=None):
+    def __init__(self, graph, idx=-1, parent=None, beta=0.3):
         n, _ = graph.shape
         self.n = n
         self.graph = graph
@@ -33,7 +33,7 @@ class MCTSNode:
             V = V.detach().numpy()
             self.cnt += 1
             # ここはnumpyなのでstd()がバグらない
-            self.Qini = (V - V.mean()) / (V.std() + 1e-5)
+            self.Qini = beta * (V - V.mean()) / (V.std() + 1e-5)
 
     def update_Q(self, n_rewards):
         self.Qtmp = [[self.Qini[i]] for i in range(self.n)]
@@ -51,7 +51,9 @@ class MCTSNode:
 
     def best_ucb(self, alpha, n_rewards):
         self.update_Q(n_rewards)
-        ucb = self.Q + alpha * self.P * np.sqrt(self.cnt.sum()) / (1 + self.cnt)
+        k = alpha * np.sqrt(self.cnt.sum()) / (1 + self.cnt)
+        ucb = self.Q + k * self.P
+        # print("UCB_DEBUG", k, self.Q, self.P, ucb)
         # print(ucb)
         return np.argmax(ucb)
     
