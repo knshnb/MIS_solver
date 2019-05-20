@@ -4,7 +4,7 @@ import torch
 from environ.mis_env import MISEnv
 from gin.gin import GIN3
 from timer import Timer
-from utils.randomplay import randomplay
+from utils.randomplay import randomplay, make_adj_set
 from utils.nodehash import NodeHash
 
 # p(s) = gnn(s).policy
@@ -43,10 +43,11 @@ class MCTSNode:
                 # ランダム試行でrewardの平均、分散を求める
                 NUM = max(100, 2 * n)
                 rewards = np.empty(NUM)
+                ss = make_adj_set(graph)
                 # TODO?: 並列化
                 Timer.start('sample')
                 for i in range(NUM):
-                    rewards[i] = randomplay(graph)
+                    rewards[i] = randomplay(ss)
                 Timer.end('sample')
                 self.reward_mean = rewards.mean()
                 # stdを0にしないようにEPSを足す

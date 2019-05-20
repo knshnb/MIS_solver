@@ -1,6 +1,6 @@
 import numpy as np
 
-def randomplay(adj):
+def make_adj_set(adj):
     n, _ = adj.shape
     ss = [set() for _ in range(n)]
     for i in range(n):
@@ -8,6 +8,10 @@ def randomplay(adj):
             if adj[i][j]:
                 ss[i].add(j)
                 ss[j].add(i)
+    return ss
+
+def randomplay(ss):
+    n = len(ss)
     vs = [i for i in range(n)]
     np.random.shuffle(vs)
     ng = set()
