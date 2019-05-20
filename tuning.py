@@ -21,12 +21,12 @@ def objective(trial):
 
     Timer.start('all')
     ans = []
-    for i in range(100):
+    for i in range(50):
         print("epoch: ", i)
         train_ans = mcts.search(graph)
         print(train_ans)
         print("train ans mean", np.mean(train_ans))
-        ans.append(train_ans)
+        ans.append(np.mean(train_ans))
         print(mcts.gnn(graph))
         mcts.train(graph, 10 * 0.95 ** i)
     Timer.end('all')
@@ -45,7 +45,7 @@ def objective(trial):
 if __name__ == '__main__':
     os.makedirs("model", exist_ok=True)
     study = optuna.create_study()
-    study.optimize(objective, n_trials=50)
+    study.optimize(objective, n_trials=1)
 
     print("params_{}".format(study.best_params))
     print("value_{}".format(study.best_value))
