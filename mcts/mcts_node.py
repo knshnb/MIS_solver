@@ -4,6 +4,7 @@ import torch
 from environ.mis_env import MISEnv
 from gin.gin import GIN3
 from timer import Timer
+from utils.randomplay import randomplay
 
 # p(s) = gnn(s).policy
 # v(s) = gnn(s).value
@@ -35,19 +36,12 @@ class MCTSNode:
             self.Q = self.Q.detach().numpy()
 
             # ランダム試行でrewardの平均、分散を求める
-            env = MISEnv()
-            env.set_graph(self.graph)
-            NUM = max(100, 2 * n)
+            NUM = max(1, 2 * n)
             rewards = np.empty(NUM)
             # TODO?: 並列化
             Timer.start('sample')
             for i in range(NUM):
-                g = env.reset()
-                done = False
-                while not done:
-                    action = np.random.randint(g.shape[0])
-                    g, reward, done, info = env.step(action)
-                rewards[i] = reward
+                rewards[i] = randomplay(graph)
             Timer.end('sample')
             self.reward_mean = rewards.mean()
             # stdを0にしないようにEPSを足す
