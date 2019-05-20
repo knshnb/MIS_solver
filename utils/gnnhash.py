@@ -11,7 +11,7 @@ class GNNHash:
     
     @staticmethod
     def get(hash):
-        return GNNHash.items[hash]
+        return GNNHash.items[hash].copy()
     
     @staticmethod
     def clear():

@@ -53,7 +53,7 @@ class GIN3(torch.nn.Module):
         for i, layer in enumerate(self.layers):
             x = layer(x, adj)
             x = torch.nn.functional.relu(x)
-            # x = torch.nn.functional.dropout(x, self.dropout, training=self.training)
+            x = torch.nn.functional.dropout(x, self.dropout, training=self.training)
         
         policy = torch.nn.functional.softmax(self.policy_output_layer(x, adj), dim=0)[:, 0]
         value = self.value_output_layer(x, adj)[:, 0]
