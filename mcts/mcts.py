@@ -85,31 +85,33 @@ class MCTS:
             means.append(node.reward_mean)
             stds.append(node.reward_std)
             pi = self.get_improved_pi(node, TAU)
-            # trainのときはpiに従わずにランダムにサンプリングしたほうが学習しているように見える
-            # action = np.random.choice(n, p=pi)
-            action = np.random.randint(n)
+            action = np.random.choice(n, p=pi)
             graphs.append(graph)
             actions.append(action)
             pis.append(pi)
             graph, reward, done, info = env.step(action)
 
         T = len(graphs)
-        for i in range(T):
+        idxs = [i for i in range(T)]
+        np.random.shuffle(idxs)
+        i = 0
+        while i < T:
+            size = min(batch_size, T - i)
             self.optimizer.zero_grad()
             loss = torch.Tensor([0])
-            for batch in range(batch_size):
-                idx = np.random.randint(T)
+            for j in range(i, i + size):
+                idx = idxs[j]
                 Timer.start('gnn')
                 p, v = MCTSNode.gnn(graphs[idx])
                 Timer.end('gnn')
-
                 n, _ = graphs[idx].shape
                 # mean, stdを用いて正規化
                 z = torch.tensor(((T - idx) - means[idx]) / stds[idx])
                 loss += mse(z, v[actions[idx]]) - (torch.tensor(pis[idx]) * torch.log(p + EPS)).sum()
-            loss /= batch_size
+            loss /= size
             loss.backward()
             self.optimizer.step()
+            i += size
 
     def search(self, graph, iter_num=100):
         root_node = MCTSNode(graph)

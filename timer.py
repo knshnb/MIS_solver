@@ -21,4 +21,4 @@ class Timer:
     @staticmethod
     def print():
         for key in Timer.logs:
-            print("{}: {:.2}sec".format(key, sum(Timer.logs[key])))
+            print("{}: {:.2f}sec".format(key, sum(Timer.logs[key])))
