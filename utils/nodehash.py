@@ -1,8 +1,11 @@
+from timer import Timer
+
 class NodeHash:
     items = {}
 
     @staticmethod
     def hash(adj):
+        Timer.start('hash')
         n, _ = adj.shape
         ret = 0
         mod = 998244353
@@ -10,11 +13,12 @@ class NodeHash:
         for i in range(n):
             for j in range(i + 1, n):
                 ret += (1 + adj[i][j]) * b
-                if ret >= mod:
+                while ret >= mod:
                     ret -= mod
                 b <<= 1
                 if b >= mod:
                     b -= mod
+        Timer.end('hash')
         return ret, n
 
     @staticmethod

@@ -28,7 +28,6 @@ class MCTSNode:
         self.idx = idx
 
         self.visit_cnt = np.zeros(n, dtype=np.float32)
-        self.max_return = -1
         if not self.is_end():
             hash = NodeHash.hash(self.graph)
             if GNNHash.has(hash):
@@ -40,7 +39,7 @@ class MCTSNode:
                 Timer.end('gnn')
                 self.P = self.P.detach().numpy()
                 self.Q = self.Q.detach().numpy()
-                GNNHash.save(hash, self.P, self.Q)
+                GNNHash.save(hash, self.P, self.Q.copy())
 
             if NodeHash.has(hash):
                 self.reward_mean, self.reward_std = NodeHash.get(hash)
