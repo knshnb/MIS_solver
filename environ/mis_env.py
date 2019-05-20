@@ -1,5 +1,6 @@
 import numpy as np
 from config import *
+from timer import Timer
 # xp = chainer.cuda.cupy if use_gpu else np
 xp = np
 
@@ -27,6 +28,7 @@ class MISEnv:
         return self.A
 
     def step(self, action):  # action: index of a vertex
+        Timer.start('env')
         self.ans.append(self.to_vertex[action])
         # delete neighbors
         mask = self.A[action] == 0
@@ -36,4 +38,5 @@ class MISEnv:
         self.A = self.A[mask][:, mask]
         self.reward += 1
         assert self.A.shape[0] == 0 or self.A.shape[0] == self.A.shape[1]
+        Timer.end('env')
         return self.A, self.reward, self.A.shape[0] == 0, {'ans': self.ans}

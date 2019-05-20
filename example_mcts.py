@@ -22,14 +22,14 @@ if __name__ == "__main__":
 
     Timer.start('all')
 
-    for i in range(10):
+    for i in range(100):
         print("epoch: ", i)
         ans = mcts.search(graph)
         print(ans)
         print("ans mean", np.mean(ans))
         print(mcts.gnn(graph))
 
-        mcts.train(graph, 5 * 0.99 ** i)
+        mcts.train(graph, 10 * 0.95 ** i)
 
     Timer.end('all')
     Timer.print()
