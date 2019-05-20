@@ -1,10 +1,8 @@
 import time
 
 class Timer:
-    @staticmethod
-    def init():
-        Timer.logs = {}
-        Timer.ss = {}
+    logs = {}
+    ss = {}
 
     @staticmethod
     def start(key):

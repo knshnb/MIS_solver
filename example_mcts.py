@@ -13,17 +13,16 @@ if __name__ == "__main__":
         [0, 1, 0, 1],
         [1, 1, 1, 0],
     ], dtype=np.float32)
-    graph = read_graph("data/random/100_250_0").adj
-    # graph = read_graph("data/random/10_25_0").adj
+    # graph = read_graph("data/random/100_250_0").adj
+    graph = read_graph("data/random/10_25_0").adj
 
     gnn = GIN3(layer_num=2)
     gnn.to(device)
     mcts = MCTS(gnn)
 
-    Timer.init()
     Timer.start('all')
 
-    for i in range(1):
+    for i in range(100):
         print("epoch: ", i)
         ans = mcts.search(graph)
         print(ans)

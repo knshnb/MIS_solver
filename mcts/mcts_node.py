@@ -5,6 +5,7 @@ from environ.mis_env import MISEnv
 from gin.gin import GIN3
 from timer import Timer
 from utils.randomplay import randomplay
+from utils.nodehash import NodeHash
 
 # p(s) = gnn(s).policy
 # v(s) = gnn(s).value
@@ -35,18 +36,23 @@ class MCTSNode:
             self.P = self.P.detach().numpy()
             self.Q = self.Q.detach().numpy()
 
-            # ランダム試行でrewardの平均、分散を求める
-            NUM = max(1, 2 * n)
-            rewards = np.empty(NUM)
-            # TODO?: 並列化
-            Timer.start('sample')
-            for i in range(NUM):
-                rewards[i] = randomplay(graph)
-            Timer.end('sample')
-            self.reward_mean = rewards.mean()
-            # stdを0にしないようにEPSを足す
-            self.reward_std = rewards.std(ddof=1) + EPS
-            assert not np.isnan(self.reward_std)
+            hash = NodeHash.hash(self.graph)
+            if NodeHash.has(hash):
+                self.reward_mean, self.reward_std = NodeHash.get(hash)
+            else:
+                # ランダム試行でrewardの平均、分散を求める
+                NUM = max(100, 2 * n)
+                rewards = np.empty(NUM)
+                # TODO?: 並列化
+                Timer.start('sample')
+                for i in range(NUM):
+                    rewards[i] = randomplay(graph)
+                Timer.end('sample')
+                self.reward_mean = rewards.mean()
+                # stdを0にしないようにEPSを足す
+                self.reward_std = rewards.std(ddof=1) + EPS
+                assert not np.isnan(self.reward_std)
+                NodeHash.save(hash, self.reward_mean, self.reward_std)
 
     def is_end(self):
         return self.graph.shape[0] == 0
