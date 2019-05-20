@@ -6,11 +6,12 @@ from gin.gin import GIN3
 from timer import Timer
 from utils.randomplay import randomplay, make_adj_set
 from utils.nodehash import NodeHash
+from utils.gnnhash import GNNHash
 
 # p(s) = gnn(s).policy
 # v(s) = gnn(s).value
 ALPHA = 2  # ucb(s,a) = Q(s,a) + ALPHA * |V| * P(s,a) / (1 + N(s,a))
-TAU = 0.5  # N(s,a)からpiを求めるときの温度
+# TAU = 0.5  # N(s,a)からpiを求めるときの温度
 EPS = 1e-10
 # TODO: TAUを学習が進むに連れて小さくしていく
 
@@ -29,14 +30,18 @@ class MCTSNode:
         self.visit_cnt = np.zeros(n, dtype=np.float32)
         self.max_return = -1
         if not self.is_end():
-            Timer.start('gnn')
-            with torch.no_grad():
-                self.P, self.Q = MCTSNode.gnn(self.graph)
-            Timer.end('gnn')
-            self.P = self.P.detach().numpy()
-            self.Q = self.Q.detach().numpy()
-
             hash = NodeHash.hash(self.graph)
+            if GNNHash.has(hash):
+                self.P, self.Q = GNNHash.get(hash)
+            else:                
+                Timer.start('gnn')
+                with torch.no_grad():
+                    self.P, self.Q = MCTSNode.gnn(self.graph)
+                Timer.end('gnn')
+                self.P = self.P.detach().numpy()
+                self.Q = self.Q.detach().numpy()
+                GNNHash.save(hash, self.P, self.Q)
+
             if NodeHash.has(hash):
                 self.reward_mean, self.reward_std = NodeHash.get(hash)
             else:
@@ -73,7 +78,7 @@ class MCTSNode:
         ucb = self.Q + ALPHA * np.sqrt(self.visit_cnt.sum()) * self.P / (1 + self.visit_cnt)
         return np.argmax(ucb)
 
-    def pi(self):
+    def pi(self, TAU):
         pow_tau = np.power(self.visit_cnt, 1 / TAU)
         assert (self.visit_cnt >= 0).all()
         return pow_tau / pow_tau.sum()

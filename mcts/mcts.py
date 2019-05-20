@@ -4,6 +4,7 @@ from environ.mis_env import MISEnv
 from mcts.mcts_node import MCTSNode
 from utils.graph import read_graph
 from timer import Timer
+from utils.gnnhash import GNNHash
 
 EPS = 1e-30  # cross entropy lossをpi * log(EPS + p)で計算 (log(0)回避)
 
@@ -59,14 +60,15 @@ class MCTS:
         return V
 
     # MCTSによって改善されたpiを返す
-    def get_improved_pi(self, root_node, iter_p=2):
+    def get_improved_pi(self, root_node, TAU, iter_p=2):
         assert not root_node.is_end()
         n, _ = root_node.graph.shape
         for i in range(max(100, n * iter_p)):
             self.rollout(root_node)
-        return root_node.pi()
+        return root_node.pi(TAU)
 
-    def train(self, graph, batch_size=10):
+    def train(self, graph, TAU, batch_size=10):
+        GNNHash.clear()
         mse = torch.nn.MSELoss()
         env = MISEnv()
         env.set_graph(graph)
@@ -82,7 +84,7 @@ class MCTS:
             node = MCTSNode(graph)
             means.append(node.reward_mean)
             stds.append(node.reward_std)
-            pi = self.get_improved_pi(node)
+            pi = self.get_improved_pi(node, TAU)
             # trainのときはpiに従わずにランダムにサンプリングしたほうが学習しているように見える
             # action = np.random.choice(n, p=pi)
             action = np.random.randint(n)

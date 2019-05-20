@@ -29,7 +29,7 @@ if __name__ == "__main__":
         print("ans mean", np.mean(ans))
         print(mcts.gnn(graph))
 
-        mcts.train(graph)
+        mcts.train(graph, 5 * 0.99 ** i)
 
     Timer.end('all')
     Timer.print()

@@ -9,14 +9,13 @@ class NodeHash:
         b = 1
         for i in range(n):
             for j in range(i + 1, n):
-                if adj[i][j]:
-                    ret += b
-                    if ret >= mod:
-                        ret -= mod
+                ret += (1 + adj[i][j]) * b
+                if ret >= mod:
+                    ret -= mod
                 b <<= 1
                 if b >= mod:
                     b -= mod
-        return ret
+        return ret, n
 
     @staticmethod
     def has(hash):
