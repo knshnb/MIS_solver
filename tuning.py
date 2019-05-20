@@ -12,6 +12,7 @@ import optuna
 def objective(trial):
     layer_num = trial.suggest_int('layer_num', 2, 20)
     feature = trial.suggest_int('feature', 5, 10)
+    beta = trial.suggest_uniform('beta', 0.9, 0.99)
 
     gnn = GIN3(layer_num=layer_num, feature=feature)
     gnn.to(device)
@@ -28,7 +29,7 @@ def objective(trial):
         print("train ans mean", np.mean(train_ans))
         ans.append(np.mean(train_ans))
         print(mcts.gnn(graph))
-        mcts.train(graph, 10 * 0.95 ** i)
+        mcts.train(graph, 10 * beta ** i)
     Timer.end('all')
     score = 0
     coef = 1
@@ -37,7 +38,7 @@ def objective(trial):
         coef *= 0.9
 
     Timer.print()
-    torch.save(gnn.state_dict(), "model/optuna_tmp_{}_{}".format(layer_num, feature))
+    torch.save(gnn.state_dict(), "model/optuna_tmp_{}_{}_{}".format(layer_num, feature, beta))
     
     return -score
 
@@ -45,7 +46,7 @@ def objective(trial):
 if __name__ == '__main__':
     os.makedirs("model", exist_ok=True)
     study = optuna.create_study()
-    study.optimize(objective, n_trials=1)
+    study.optimize(objective, n_trials=50)
 
     print("params_{}".format(study.best_params))
     print("value_{}".format(study.best_value))
