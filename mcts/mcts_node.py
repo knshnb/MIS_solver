@@ -3,6 +3,7 @@ import numpy as np
 import torch
 from environ.mis_env import MISEnv
 from gin.gin import GIN3
+from timer import Timer
 
 # p(s) = gnn(s).policy
 # v(s) = gnn(s).value
@@ -26,8 +27,10 @@ class MCTSNode:
         self.visit_cnt = np.zeros(n, dtype=np.float32)
         self.max_return = -1
         if not self.is_end():
+            Timer.start('gnn')
             with torch.no_grad():
                 self.P, self.Q = MCTSNode.gnn(self.graph)
+            Timer.end('gnn')
             self.P = self.P.detach().numpy()
             self.Q = self.Q.detach().numpy()
 
@@ -37,6 +40,7 @@ class MCTSNode:
             NUM = max(100, 2 * n)
             rewards = np.empty(NUM)
             # TODO?: 並列化
+            Timer.start('sample')
             for i in range(NUM):
                 g = env.reset()
                 done = False
@@ -44,6 +48,7 @@ class MCTSNode:
                     action = np.random.randint(g.shape[0])
                     g, reward, done, info = env.step(action)
                 rewards[i] = reward
+            Timer.end('sample')
             self.reward_mean = rewards.mean()
             # stdを0にしないようにEPSを足す
             self.reward_std = rewards.std(ddof=1) + EPS

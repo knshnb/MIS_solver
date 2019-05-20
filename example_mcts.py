@@ -4,6 +4,7 @@ import torch
 from utils.graph import read_graph
 from mcts.mcts import MCTS
 from gin.gin import GIN3
+from timer import Timer
 
 if __name__ == "__main__":
     graph0 = np.array([
@@ -19,7 +20,10 @@ if __name__ == "__main__":
     gnn.to(device)
     mcts = MCTS(gnn)
 
-    for i in range(1000):
+    Timer.init()
+    Timer.start('all')
+
+    for i in range(10):
         print("epoch: ", i)
         ans = mcts.search(graph)
         print(ans)
@@ -27,3 +31,6 @@ if __name__ == "__main__":
         print(mcts.gnn(graph))
 
         mcts.train(graph)
+
+    Timer.end('all')
+    Timer.print()

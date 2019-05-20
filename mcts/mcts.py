@@ -3,6 +3,7 @@ import torch
 from environ.mis_env import MISEnv
 from mcts.mcts_node import MCTSNode
 from utils.graph import read_graph
+from timer import Timer
 
 EPS = 1e-30  # cross entropy lossをpi * log(EPS + p)で計算 (log(0)回避)
 
@@ -96,7 +97,9 @@ class MCTS:
             loss = torch.Tensor([0])
             for batch in range(batch_size):
                 idx = np.random.randint(T)
+                Timer.start('gnn')
                 p, v = MCTSNode.gnn(graphs[idx])
+                Timer.end('gnn')
 
                 n, _ = graphs[idx].shape
                 # mean, stdを用いて正規化
