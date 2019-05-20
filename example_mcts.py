@@ -1,3 +1,4 @@
+from config import device
 import numpy as np
 import torch
 from utils.graph import read_graph
@@ -15,6 +16,7 @@ if __name__ == "__main__":
     graph = read_graph("data/random/10_25_0").adj
 
     gnn = GIN3(layer_num=2)
+    gnn.to(device)
     mcts = MCTS(gnn)
 
     for i in range(1000):

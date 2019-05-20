@@ -36,6 +36,7 @@ class MCTSNode:
             env.set_graph(self.graph)
             NUM = max(100, 2 * n)
             rewards = np.empty(NUM)
+            # TODO?: 並列化
             for i in range(NUM):
                 g = env.reset()
                 done = False

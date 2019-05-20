@@ -1,6 +1,8 @@
+from config import device
 import torch
 from gin.mlp import MLP
 
+# GPU対応はGIN3だけ
 class GIN(torch.nn.Module):
     def __init__(self, layer_num=2, feature=8, M=1, dropout=0.5):
         super(GIN, self).__init__()
@@ -44,9 +46,10 @@ class GIN3(torch.nn.Module):
         adj = adj.copy()
         for i in range(adj.shape[0]):
             adj[i][i] = 1
-        adj = torch.from_numpy(adj)
+        adj = torch.from_numpy(adj).to(device)
 
         x = torch.ones((adj.shape[0], 1), dtype=torch.float32)
+        x = x.to(device)
         for i, layer in enumerate(self.layers):
             x = layer(x, adj)
             x = torch.nn.functional.relu(x)
@@ -55,4 +58,4 @@ class GIN3(torch.nn.Module):
         policy = torch.nn.functional.softmax(self.policy_output_layer(x, adj), dim=0)[:, 0]
         value = self.value_output_layer(x, adj)[:, 0]
         # TODO: valueを正規化して出力したい！
-        return policy, value
+        return policy.cpu(), value.cpu()
