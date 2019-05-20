@@ -14,8 +14,8 @@ class MCTS:
         self.optimizer = torch.optim.Adam(gnn.parameters(), lr=0.01)
         self.gnn = gnn
 
-    # parantのQ(s,a), N(s,a)を更新
-    def update_parant(self, node, V):
+    # parentのQ(s,a), N(s,a)を更新
+    def update_parent(self, node, V):
         par = node.parent
         normalized_V = par.normalize_reward(V)
         if par.visit_cnt[node.idx] == 0:
@@ -55,7 +55,7 @@ class MCTS:
         V = node.state_value()
         while node is not root_node:
             V += 1
-            self.update_parant(node, V)
+            self.update_parent(node, V)
             node = node.parent
         return V
 
