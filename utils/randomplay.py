@@ -8,10 +8,11 @@ def make_adj_set_sparse(adj):
     m = row.size
     ss = [set() for _ in range(n)]
     for i in range(m):
-        a = row[i]
-        b = col[i]
-        ss[a].add(b)
-        ss[b].add(a)
+        a = int(row[i])
+        b = int(col[i])
+        if a < b:
+            ss[a].add(b)
+            ss[b].add(a)
     return ss
 
 def make_adj_set(adj):

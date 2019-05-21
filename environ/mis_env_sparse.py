@@ -38,8 +38,9 @@ class MISEnv_Sparse:
         for i in range(m):
             a = int(row[i])
             b = int(col[i])
-            ss[a].add(b)
-            ss[b].add(a)
+            if a < b:
+                ss[a].add(b)
+                ss[b].add(a)
         mask = np.full(n, True)
         mask[action] = False
         for i in range(n):
