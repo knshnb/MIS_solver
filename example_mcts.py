@@ -1,40 +1,31 @@
 from config import device
 import numpy as np
 import torch
-from utils.graph import read_graph
+from utils.graph import read_graph, generate_random_graph
 from mcts.mcts import MCTS
+from mcts.mcts_trainer import MCTSTrainer
 from gin.gin import GIN3
 from utils.timer import Timer
 from utils.counter import Counter
-from utils.nodehash import NodeHash
 
 if __name__ == "__main__":
-    graph0 = np.array([
-        [0, 1, 0, 1],
-        [1, 0, 1, 1],
-        [0, 1, 0, 1],
-        [1, 1, 1, 0],
-    ], dtype=np.float32)
-    graph = read_graph("data/random/100_250_0").adj
-    # graph = read_graph("data/random/10_25_0").adj
+    test_graphs = [read_graph("data/random/1000_2500_{}".format(i)).adj for i in range(5)]
 
     gnn = GIN3(layer_num=2)
     gnn.to(device)
-    mcts = MCTS(gnn)
-    NodeHash.init(1000)
+    trainer = MCTSTrainer(gnn, test_graphs, "test")
 
     Timer.start('all')
 
-    for i in range(1):
+    for i in range(2):
         print("epoch: ", i)
-        ans = mcts.search(graph)
-        print(ans)
-        print("ans mean", np.mean(ans))
-        print(mcts.gnn(graph))
-        # print(mcts.gnn(graph, True))
-
-        mcts.train(graph, 10 * 0.95 ** i)
+        graph = generate_random_graph(100, 250).adj
+        trainer.train(graph, 10 * 0.97 ** i)
+        trainer.test()
 
     Timer.end('all')
     Timer.print()
     Counter.print()
+
+    trainer.save_model()
+    trainer.save_test_result()
