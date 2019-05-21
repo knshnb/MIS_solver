@@ -5,6 +5,7 @@ from utils.graph import read_graph
 from mcts.mcts import MCTS
 from gin.gin import GIN3
 from utils.timer import Timer
+from utils.nodehash import NodeHash
 
 def use_model(graph, filename, iter=100):
     gnn = GIN3(layer_num=2)
@@ -12,6 +13,7 @@ def use_model(graph, filename, iter=100):
     gnn.to(device)
     gnn.eval()
     mcts = MCTS(gnn)
+    NodeHash.init(1000)
 
     Timer.start('all')
 
@@ -22,7 +24,7 @@ def use_model(graph, filename, iter=100):
     Timer.print()
 
 if __name__ == "__main__":
-    graph0 = read_graph("data/random/100_250_0").adj
+    graph0 = read_graph("data/random/1000_2500_0").adj
     graph1 = read_graph("data/random/100_250_1").adj
 
     use_model(graph0, "model/hoge", iter=100)

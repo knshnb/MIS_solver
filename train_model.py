@@ -2,28 +2,30 @@ import os
 from config import device
 import numpy as np
 import torch
-from utils.graph import read_graph
+from utils.graph import read_graph, generate_random_graph
 from mcts.mcts import MCTS
 from gin.gin import GIN3
 from utils.timer import Timer
+from utils.nodehash import NodeHash
 
 def train_and_save(train_graph, test_graph, filename, iter=100):
     gnn = GIN3(layer_num=2)
     gnn.to(device)
     mcts = MCTS(gnn)
+    NodeHash.init(1000)
 
     Timer.start('all')
     for i in range(iter):
         print("epoch: ", i)
-        train_ans = mcts.search(train_graph)
-        print(train_ans)
-        print("train ans mean", np.mean(train_ans))
+        # train_ans = mcts.search(train_graph)
+        # print(train_ans)
+        # print("train ans mean", np.mean(train_ans))
 
         test_ans = mcts.search(test_graph)
         print(test_ans)
         print("test ans mean", np.mean(test_ans))
 
-        print(mcts.gnn(train_graph))
+        print(mcts.gnn(test_graph))
         mcts.train(train_graph, 10 * 0.95 ** i)
 
     Timer.end('all')
@@ -36,4 +38,5 @@ if __name__ == "__main__":
 
     filename = "hoge"
     os.makedirs("model", exist_ok=True)
-    train_and_save(graph0, graph1, "model/" + filename, iter=100)
+    train_graph = generate_random_graph(100, 250).adj
+    train_and_save(train_graph, graph1, "model/" + filename, iter=0)
