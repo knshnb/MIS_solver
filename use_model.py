@@ -8,7 +8,7 @@ from mcts.mcts import MCTS
 from gin.gin import GIN3
 from utils.timer import Timer
 
-def use_model(graph, filename, TAU, iter=100):
+def use_model(graph, filename, TAU, iter_p=1):
     # seedを初期化しないと全部おなじになる！
     np.random.seed()
 
@@ -20,7 +20,7 @@ def use_model(graph, filename, TAU, iter=100):
 
     Timer.start('all')
 
-    result = mcts.best_search(graph, TAU=TAU)
+    result = mcts.best_search(graph, TAU=TAU, iter_p=iter_p)
     print("TAU: {}, result: {}".format(TAU, result))
 
     Timer.end('all')
