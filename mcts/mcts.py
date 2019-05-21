@@ -121,7 +121,7 @@ class MCTS:
             self.optimizer.step()
             i += size
 
-    def search(self, graph, iter_num=100):
+    def search(self, graph, iter_num=10):
         root_node = MCTSNode(graph, self)
         ans = []
         for i in range(iter_num):
