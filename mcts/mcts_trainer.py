@@ -21,6 +21,9 @@ class MCTSTrainer:
     def train(self, graph, TAU, batch_size=10):
         self.mcts.train(graph, TAU, batch_size=batch_size)
 
+    def train2(self, graph, TAU, batch_size=10):
+        self.mcts.train(graph, TAU, batch_size=batch_size, stop_at_leaf=True)
+
     def test(self):
         result = [self.mcts.search(graph) for graph in self.test_graphs]
         print(result)

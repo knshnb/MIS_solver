@@ -67,15 +67,15 @@ class MCTS:
         return V
 
     # MCTSによって改善されたpiを返す
-    def get_improved_pi(self, root_node, TAU, iter_p=2):
+    def get_improved_pi(self, root_node, TAU, iter_p=2, stop_at_leaf=False):
         assert not root_node.is_end()
         self.root_max = 0
         n, _ = root_node.graph.shape
-        for i in range(max(100, n * iter_p)):
-            self.rollout(root_node)
+        for i in range(min(200, max(50, n * iter_p))):
+            self.rollout(root_node, stop_at_leaf=stop_at_leaf)
         return root_node.pi(TAU)
 
-    def train(self, graph, TAU, batch_size=10):
+    def train(self, graph, TAU, batch_size=10, stop_at_leaf=False):
         self.gnnhash.clear()
         mse = torch.nn.MSELoss()
         env = MISEnv() if use_dense else MISEnv_Sparse()
@@ -92,7 +92,7 @@ class MCTS:
             node = MCTSNode(graph, self)
             means.append(node.reward_mean)
             stds.append(node.reward_std)
-            pi = self.get_improved_pi(node, TAU)
+            pi = self.get_improved_pi(node, TAU, stop_at_leaf=stop_at_leaf)
             action = np.random.choice(n, p=pi)
             graphs.append(graph)
             actions.append(action)
