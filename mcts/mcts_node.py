@@ -1,3 +1,4 @@
+from multiprocessing import Pool
 import copy
 import numpy as np
 import torch
@@ -45,14 +46,14 @@ class MCTSNode:
                 self.reward_mean, self.reward_std = NodeHash.get(hash)
             else:
                 # ランダム試行でrewardの平均、分散を求める
-                NUM = max(100, 2 * n)
-                rewards = np.empty(NUM)
+                NUM = min(max(100, 2 * n), 500)
                 ss = make_adj_set(graph)
-                # TODO?: 並列化
                 Timer.start('sample')
                 Counter.count('sample')
-                for i in range(NUM):
-                    rewards[i] = randomplay(ss)
+                # ランダムサンプリングはプロセス並列で実行
+                pool = Pool()
+                rewards = np.array(pool.map(randomplay, [ss] * NUM))
+                pool.close()
                 Timer.end('sample')
                 self.reward_mean = rewards.mean()
                 # stdを0にしないようにEPSを足す
