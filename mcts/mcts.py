@@ -15,7 +15,7 @@ class MCTS:
     def __init__(self, gnn):
         self.optimizer = torch.optim.Adam(gnn.parameters(), lr=0.01)
         self.gnn = gnn
-        self.nodehash = NodeHash(1000)
+        self.nodehash = NodeHash(5000)
         self.gnnhash = GNNHash()
 
     # parentのQ(s,a), N(s,a)を更新
