@@ -9,7 +9,7 @@ def make_adj_set_sparse(adj):
     ss = [set() for _ in range(n)]
     for i in range(m):
         a = row[i]
-        b = row[i]
+        b = col[i]
         ss[a].add(b)
         ss[b].add(a)
     return ss

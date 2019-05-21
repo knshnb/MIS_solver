@@ -15,7 +15,7 @@ if __name__ == "__main__":
         [0, 1, 0, 1],
         [1, 1, 1, 0],
     ], dtype=np.float32)
-    graph = read_graph("data/learn/50_125_0").adj
+    graph = read_graph("data/random/100_250_0").adj
     # graph = read_graph("data/random/10_25_0").adj
 
     gnn = GIN3(layer_num=2)
@@ -25,13 +25,13 @@ if __name__ == "__main__":
 
     Timer.start('all')
 
-    for i in range(3):
+    for i in range(1):
         print("epoch: ", i)
         ans = mcts.search(graph)
         print(ans)
         print("ans mean", np.mean(ans))
         print(mcts.gnn(graph))
-        print(mcts.gnn(graph, True))
+        # print(mcts.gnn(graph, True))
 
         mcts.train(graph, 10 * 0.95 ** i)
 
