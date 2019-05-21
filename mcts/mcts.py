@@ -17,6 +17,8 @@ class MCTS:
         self.gnn = gnn
         self.nodehash = NodeHash(5000)
         self.gnnhash = GNNHash()
+        # rolloutにおけるrootのrewardのmax
+        self.root_max = 0
 
     # parentのQ(s,a), N(s,a)を更新
     def update_parent(self, node, V):
@@ -61,11 +63,13 @@ class MCTS:
             V += 1
             self.update_parent(node, V)
             node = node.parent
+        self.root_max = max(self.root_max, V)
         return V
 
     # MCTSによって改善されたpiを返す
     def get_improved_pi(self, root_node, TAU, iter_p=2):
         assert not root_node.is_end()
+        self.root_max = 0
         n, _ = root_node.graph.shape
         for i in range(max(100, n * iter_p)):
             self.rollout(root_node)
@@ -123,3 +127,21 @@ class MCTS:
         for i in range(iter_num):
             ans.append(self.rollout(root_node))
         return ans
+
+    def best_search(self, graph, TAU=0.1):
+        self.gnnhash.clear()
+        mse = torch.nn.MSELoss()
+        env = MISEnv() if use_dense else MISEnv_Sparse()
+        env.set_graph(graph)
+
+        ma = 0
+        reward = 0
+        done = False
+        while not done:
+            n, _ = graph.shape
+            node = MCTSNode(graph, self)
+            pi = self.get_improved_pi(node, TAU)
+            ma = max(ma, self.root_max + reward)
+            action = np.random.choice(n, p=pi)
+            graph, reward, done, info = env.step(action)
+        return ma, reward

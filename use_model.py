@@ -1,3 +1,5 @@
+import multiprocessing
+from multiprocessing import Pool
 from config import device
 import numpy as np
 import torch
@@ -6,7 +8,10 @@ from mcts.mcts import MCTS
 from gin.gin import GIN3
 from utils.timer import Timer
 
-def use_model(graph, filename, iter=100):
+def use_model(graph, filename, TAU, iter=100):
+    # seedを初期化しないと全部おなじになる！
+    np.random.seed()
+
     gnn = GIN3(layer_num=2)
     gnn.load_state_dict(torch.load(filename))
     gnn.to(device)
@@ -15,8 +20,8 @@ def use_model(graph, filename, iter=100):
 
     Timer.start('all')
 
-    result = mcts.search(graph, iter_num=iter)
-    print(result)
+    result = mcts.best_search(graph, TAU=TAU)
+    print("TAU: {}, result: {}".format(TAU, result))
 
     Timer.end('all')
     Timer.print()
@@ -25,4 +30,10 @@ if __name__ == "__main__":
     graph0 = read_graph("data/random/1000_2500_0").adj
     graph1 = read_graph("data/random/100_250_1").adj
 
-    use_model(graph0, "model/hoge", iter=100)
+    print(multiprocessing.cpu_count())
+    pool = Pool()
+    for i in range(8):
+        TAU = 0.1 + 0.5 * 0.8 ** i
+        pool.apply_async(use_model, args=(graph1, "model/hoge", TAU))
+    pool.close()
+    pool.join()
