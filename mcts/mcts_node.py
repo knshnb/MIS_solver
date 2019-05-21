@@ -16,33 +16,30 @@ EPS = 1e-10
 # TODO: TAUを学習が進むに連れて小さくしていく
 
 class MCTSNode:
-    @staticmethod
-    def set_gnn(gnn):
-        MCTSNode.gnn = gnn
-
-    def __init__(self, graph, idx=-1, parent=None):
+    def __init__(self, graph, mcts, idx=-1, parent=None):
         n, _ = graph.shape
         self.graph = graph
         self.parent = parent
         self.children = [None for _ in range(n)]
+        self.mcts = mcts
         self.idx = idx
 
         self.visit_cnt = np.zeros(n, dtype=np.float32)
         if not self.is_end():
-            hash = NodeHash.hash(self.graph)
-            if GNNHash.has(hash):
-                self.P, self.Q = GNNHash.get(hash)
+            hash = self.mcts.nodehash.hash(self.graph)
+            if self.mcts.gnnhash.has(hash):
+                self.P, self.Q = self.mcts.gnnhash.get(hash)
             else:                
                 Timer.start('gnn')
                 with torch.no_grad():
-                    self.P, self.Q = MCTSNode.gnn(self.graph)
+                    self.P, self.Q = self.mcts.gnn(self.graph)
                 Timer.end('gnn')
                 self.P = self.P.detach().numpy()
                 self.Q = self.Q.detach().numpy()
-                GNNHash.save(hash, self.P, self.Q.copy())
+                self.mcts.gnnhash.save(hash, self.P, self.Q.copy())
 
-            if NodeHash.has(hash):
-                self.reward_mean, self.reward_std = NodeHash.get(hash)
+            if self.mcts.nodehash.has(hash):
+                self.reward_mean, self.reward_std = self.mcts.nodehash.get(hash)
             else:
                 # ランダム試行でrewardの平均、分散を求める
                 # 試行回数のMAXは100に固定
@@ -58,7 +55,7 @@ class MCTSNode:
                 # stdを0にしないようにEPSを足す
                 self.reward_std = rewards.std(ddof=1) + EPS
                 assert not np.isnan(self.reward_std)
-                NodeHash.save(hash, self.reward_mean, self.reward_std)
+                self.mcts.nodehash.save(hash, self.reward_mean, self.reward_std)
 
     def is_end(self):
         return self.graph.shape[0] == 0

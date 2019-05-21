@@ -7,6 +7,7 @@ from mcts.mcts import MCTS
 from mcts.mcts_trainer import MCTSTrainer
 from gin.gin import GIN3
 from utils.timer import Timer
+from utils.counter import Counter
 import optuna
 
 # これを最小化するようなパラメータを見つけてくれる
@@ -45,9 +46,11 @@ def objective(trial):
 
 
 if __name__ == '__main__':
+    Timer.disable()
+    Counter.disable()
     os.makedirs("model", exist_ok=True)
     study = optuna.create_study()
-    study.optimize(objective, n_trials=50)
+    study.optimize(objective, timeout=60, n_jobs=-1)
 
     print("params_{}".format(study.best_params))
     print("value_{}".format(study.best_value))

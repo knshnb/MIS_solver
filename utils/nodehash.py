@@ -3,12 +3,10 @@ from config import use_dense
 import numpy as np
 
 class NodeHash:
-    items = {}
-    memo = {}
-
-    @staticmethod
-    def init(MAX_N):
+    def __init__(self, MAX_N):
         Timer.start('init hash')
+        self.items = {}
+        self.memo = {}
         acc = 0
         mod = 998244353
         save = {}
@@ -17,7 +15,7 @@ class NodeHash:
             save[i * (i - 1) // 2] = i
         for i in range(MAX_N * (MAX_N - 1) // 2 + 1):
             if i in save:
-                NodeHash.memo[save[i]] = acc
+                self.memo[save[i]] = acc
             acc += b
             if acc >= mod:
                 acc -= mod
@@ -26,8 +24,7 @@ class NodeHash:
                 b -= mod
         Timer.end('init hash')
 
-    @staticmethod
-    def hash_sparse(adj):
+    def hash_sparse(self, adj):
         Timer.start('hash')
         n, _ = adj.shape
         row = adj.row
@@ -35,7 +32,7 @@ class NodeHash:
         val = adj.data.astype(int)
         m = row.size
         mod = 998244353
-        ret = NodeHash.memo[n]
+        ret = self.memo[n]
         for i in range(m):
             r = row[i]
             c = col[i]
@@ -48,10 +45,9 @@ class NodeHash:
         Timer.end('hash')
         return ret, n
 
-    @staticmethod
-    def hash(adj):
+    def hash(self, adj):
         if not use_dense:
-            return NodeHash.hash_sparse(adj)
+            return self.hash_sparse(adj)
         Timer.start('hash')
         n, _ = adj.shape
         ret = 0
@@ -70,14 +66,11 @@ class NodeHash:
         Timer.end('hash')
         return ret, n
 
-    @staticmethod
-    def has(hash):
-        return hash in NodeHash.items
+    def has(self, hash):
+        return hash in self.items
     
-    @staticmethod
-    def save(hash, reward_mean, reward_std):
-        NodeHash.items[hash] = [reward_mean, reward_std]
+    def save(self, hash, reward_mean, reward_std):
+        self.items[hash] = [reward_mean, reward_std]
     
-    @staticmethod
-    def get(hash):
-        return NodeHash.items[hash]
+    def get(self, hash):
+        return self.items[hash]

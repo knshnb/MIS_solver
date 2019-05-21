@@ -1,18 +1,15 @@
 class GNNHash:
-    items = {}
+    def __init__(self):
+        self.items = {}
 
-    @staticmethod
-    def has(hash):
-        return hash in GNNHash.items
+    def has(self, hash):
+        return hash in self.items
     
-    @staticmethod
-    def save(hash, p, q):
-        GNNHash.items[hash] = [p, q]
+    def save(self, hash, p, q):
+        self.items[hash] = [p, q]
     
-    @staticmethod
-    def get(hash):
-        return GNNHash.items[hash].copy()
+    def get(self, hash):
+        return self.items[hash].copy()
     
-    @staticmethod
-    def clear():
-        GNNHash.items = {}
+    def clear(self):
+        self.items = {}

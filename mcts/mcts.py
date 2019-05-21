@@ -7,14 +7,16 @@ from mcts.mcts_node import MCTSNode
 from utils.graph import read_graph
 from utils.timer import Timer
 from utils.gnnhash import GNNHash
+from utils.nodehash import NodeHash
 
 EPS = 1e-30  # cross entropy lossをpi * log(EPS + p)で計算 (log(0)回避)
 
 class MCTS:
     def __init__(self, gnn):
-        MCTSNode.set_gnn(gnn)
         self.optimizer = torch.optim.Adam(gnn.parameters(), lr=0.01)
         self.gnn = gnn
+        self.nodehash = NodeHash(1000)
+        self.gnnhash = GNNHash()
 
     # parentのQ(s,a), N(s,a)を更新
     def update_parent(self, node, V):
@@ -48,7 +50,7 @@ class MCTS:
                 env = MISEnv() if use_dense else MISEnv_Sparse()
                 env.set_graph(node.graph)
                 next_graph, r, done, info = env.step(v)
-                node.children[v] = MCTSNode(next_graph, idx=v, parent=node)
+                node.children[v] = MCTSNode(next_graph, self, idx=v, parent=node)
                 if stop_at_leaf:
                     finish = True
             node = node.children[v]
@@ -70,7 +72,7 @@ class MCTS:
         return root_node.pi(TAU)
 
     def train(self, graph, TAU, batch_size=10):
-        GNNHash.clear()
+        self.gnnhash.clear()
         mse = torch.nn.MSELoss()
         env = MISEnv() if use_dense else MISEnv_Sparse()
         env.set_graph(graph)
@@ -83,7 +85,7 @@ class MCTS:
         done = False
         while not done:
             n, _ = graph.shape
-            node = MCTSNode(graph)
+            node = MCTSNode(graph, self)
             means.append(node.reward_mean)
             stds.append(node.reward_std)
             pi = self.get_improved_pi(node, TAU)
@@ -104,7 +106,7 @@ class MCTS:
             for j in range(i, i + size):
                 idx = idxs[j]
                 Timer.start('gnn')
-                p, v = MCTSNode.gnn(graphs[idx], True)
+                p, v = self.gnn(graphs[idx], True)
                 Timer.end('gnn')
                 n, _ = graphs[idx].shape
                 # mean, stdを用いて正規化
@@ -116,7 +118,7 @@ class MCTS:
             i += size
 
     def search(self, graph, iter_num=100):
-        root_node = MCTSNode(graph)
+        root_node = MCTSNode(graph, self)
         ans = []
         for i in range(iter_num):
             ans.append(self.rollout(root_node))

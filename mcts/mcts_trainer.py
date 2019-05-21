@@ -5,7 +5,6 @@ from config import use_dense
 import torch
 from environ.mis_env import MISEnv
 from environ.mis_env_sparse import MISEnv_Sparse
-from mcts.mcts_node import MCTSNode
 from mcts.mcts import MCTS
 from utils.graph import read_graph
 from utils.timer import Timer
@@ -18,7 +17,6 @@ class MCTSTrainer:
         self.test_graphs = test_graphs
         self.test_result = []
         self.filename = filename
-        NodeHash.init(1000)
 
     def train(self, graph, TAU, batch_size=10):
         self.mcts.train(graph, TAU, batch_size=batch_size)
