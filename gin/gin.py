@@ -1,6 +1,7 @@
-from config import device
+from config import device, use_dense
 import torch
 from gin.mlp import MLP
+import numpy as np
 
 # GPU対応はGIN3だけ
 class GIN(torch.nn.Module):
@@ -46,11 +47,24 @@ class GIN3(torch.nn.Module):
         self.dropout = dropout
 
     # return (policy, value)
-    def forward(self, adj):
-        adj = adj.copy()
-        for i in range(adj.shape[0]):
-            adj[i][i] = 1
-        adj = torch.from_numpy(adj).to(device)
+    def forward(self, adj, force_dense=False):
+        if use_dense or force_dense:
+            if not use_dense:
+                adj = adj.todense().A
+            else:
+                adj = adj.copy()
+            for i in range(adj.shape[0]):
+                adj[i][i] = 1
+            adj = torch.from_numpy(adj).to(device)
+        else:
+            n, _ = adj.shape
+            x = adj.row.tolist()
+            y = adj.col.tolist()
+            for i in range(n):
+                x.append(i)
+                y.append(i)
+            m = len(x)
+            adj = torch.sparse.FloatTensor(torch.LongTensor([x, y]), torch.Tensor(np.ones(m)), torch.Size(list(adj.shape))).to(device)
 
         x = torch.ones((adj.shape[0], 1), dtype=torch.float32)
         x = x.to(device)

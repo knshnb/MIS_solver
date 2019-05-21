@@ -1,6 +1,22 @@
 import numpy as np
+from config import use_dense
+
+def make_adj_set_sparse(adj):
+    n, _ = adj.shape
+    row = adj.row
+    col = adj.col
+    m = row.size
+    ss = [set() for _ in range(n)]
+    for i in range(m):
+        a = row[i]
+        b = row[i]
+        ss[a].add(b)
+        ss[b].add(a)
+    return ss
 
 def make_adj_set(adj):
+    if not use_dense:
+        return make_adj_set_sparse(adj)
     n, _ = adj.shape
     ss = [set() for _ in range(n)]
     for i in range(n):

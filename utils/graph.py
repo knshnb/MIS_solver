@@ -36,7 +36,7 @@ class Graph:
                         x.append(b)
                         y.append(a)
                         self.m += 1
-            self.adj = coo_matrix(xp.ones(2 * self.m, dtype=xp.float32), xp.array(x), xp.array(y), (self.n, self.n))
+            self.adj = coo_matrix((np.ones(2 * self.m, dtype=np.float32), (np.array(x), np.array(y))), shape=(self.n, self.n))
 
 def generate_random_graph(n, m):
     g = Graph(n, use_dense)

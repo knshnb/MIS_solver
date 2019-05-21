@@ -1,6 +1,8 @@
 import numpy as np
+from config import use_dense
 import torch
 from environ.mis_env import MISEnv
+from environ.mis_env_sparse import MISEnv_Sparse
 from mcts.mcts_node import MCTSNode
 from utils.graph import read_graph
 from timer import Timer
@@ -43,7 +45,7 @@ class MCTS:
             if node.is_end(): break
             v = node.best_child()
             if node.children[v] is None:
-                env = MISEnv()
+                env = MISEnv() if use_dense else MISEnv_Sparse()
                 env.set_graph(node.graph)
                 next_graph, r, done, info = env.step(v)
                 node.children[v] = MCTSNode(next_graph, idx=v, parent=node)
@@ -70,7 +72,7 @@ class MCTS:
     def train(self, graph, TAU, batch_size=10):
         GNNHash.clear()
         mse = torch.nn.MSELoss()
-        env = MISEnv()
+        env = MISEnv() if use_dense else MISEnv_Sparse()
         env.set_graph(graph)
 
         graphs = []
@@ -102,7 +104,7 @@ class MCTS:
             for j in range(i, i + size):
                 idx = idxs[j]
                 Timer.start('gnn')
-                p, v = MCTSNode.gnn(graphs[idx])
+                p, v = MCTSNode.gnn(graphs[idx], True)
                 Timer.end('gnn')
                 n, _ = graphs[idx].shape
                 # mean, stdを用いて正規化
