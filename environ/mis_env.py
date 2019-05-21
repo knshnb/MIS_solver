@@ -1,6 +1,6 @@
 import numpy as np
 from config import *
-from timer import Timer
+from utils.timer import Timer
 # xp = chainer.cuda.cupy if use_gpu else np
 xp = np
 

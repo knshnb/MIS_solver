@@ -5,7 +5,7 @@ from environ.mis_env import MISEnv
 from environ.mis_env_sparse import MISEnv_Sparse
 from mcts.mcts_node import MCTSNode
 from utils.graph import read_graph
-from timer import Timer
+from utils.timer import Timer
 from utils.gnnhash import GNNHash
 
 EPS = 1e-30  # cross entropy lossをpi * log(EPS + p)で計算 (log(0)回避)

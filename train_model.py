@@ -5,7 +5,7 @@ import torch
 from utils.graph import read_graph
 from mcts.mcts import MCTS
 from gin.gin import GIN3
-from timer import Timer
+from utils.timer import Timer
 
 def train_and_save(train_graph, test_graph, filename, iter=100):
     gnn = GIN3(layer_num=2)

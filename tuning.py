@@ -5,7 +5,7 @@ import os
 from utils.graph import read_graph
 from mcts.mcts import MCTS
 from gin.gin import GIN3
-from timer import Timer
+from utils.timer import Timer
 import optuna
 
 # これを最小化するようなパラメータを見つけてくれる

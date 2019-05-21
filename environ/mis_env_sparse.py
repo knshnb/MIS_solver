@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.sparse import coo_matrix
 from config import *
-from timer import Timer
+from utils.timer import Timer
 
 """
 graph is represented by adjacency matrix

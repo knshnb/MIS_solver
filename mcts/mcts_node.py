@@ -2,7 +2,8 @@ import copy
 import numpy as np
 import torch
 from gin.gin import GIN3
-from timer import Timer
+from utils.timer import Timer
+from utils.counter import Counter
 from utils.randomplay import randomplay, make_adj_set
 from utils.nodehash import NodeHash
 from utils.gnnhash import GNNHash
@@ -49,6 +50,7 @@ class MCTSNode:
                 ss = make_adj_set(graph)
                 # TODO?: 並列化
                 Timer.start('sample')
+                Counter.count('sample')
                 for i in range(NUM):
                     rewards[i] = randomplay(ss)
                 Timer.end('sample')

@@ -1,4 +1,4 @@
-from timer import Timer
+from utils.timer import Timer
 from config import use_dense
 import numpy as np
 
@@ -28,6 +28,7 @@ class NodeHash:
 
     @staticmethod
     def hash_sparse(adj):
+        Timer.start('hash')
         n, _ = adj.shape
         row = adj.row
         col = adj.col
@@ -44,6 +45,7 @@ class NodeHash:
             ret -= pow(2, k, mod)
             ret += (1 + val[i]) * pow(2, k, mod)
             ret %= mod
+        Timer.end('hash')
         return ret, n
 
     @staticmethod
