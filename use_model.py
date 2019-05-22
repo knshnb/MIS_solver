@@ -66,7 +66,11 @@ if __name__ == "__main__":
         # "1000_2500_8": read_graph("data/random/1000_2500_8").adj,
         # "1000_2500_9": read_graph("data/random/1000_2500_9").adj,
 
-        "gen400-p0.9-55": read_graph("data/gen400-p0.9-55").adj,
+        # "gen400-p0.9-55": read_graph("data/gen400-p0.9-55").adj,
+
+        "ego-facebook": read_graph("data/ego-facebook").adj,
+        "ego-gplus": read_graph("data/ego-gplus").adj,
+        "ego-twitter": read_graph("data/ego-twitter").adj,
     }
     gnns = [best_gin2(name) for name in best_model_names]
     gnns.append(best_gin1())
