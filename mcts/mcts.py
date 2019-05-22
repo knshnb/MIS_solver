@@ -29,7 +29,7 @@ class MCTS:
             # Qが初期値から一度も更新されていない
             par.Q[node.idx] = normalized_V
         else:
-            self.update_Q(par, normalized_V, node.idx, method="max")
+            self.update_Q(par, normalized_V, node.idx, method="mean")
         par.visit_cnt[node.idx] += 1
 
     def update_Q(self, node, V, idx, method):
