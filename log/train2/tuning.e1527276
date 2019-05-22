@@ -1,0 +1,10 @@
+/lustre/gk36/k36042/MIS_solver/mcts/mcts.py:36: RuntimeWarning: overflow encountered in float_scalars
+  node.Q[idx] = (node.Q[idx] * node.visit_cnt[idx] + V) / (node.visit_cnt[idx] + 1)
+[I 2019-05-22 15:47:23,312] Finished trial#2 resulted in value: -17158.26765254707. Current best value is -17158.26765254707 with parameters: {'layer_num': 4, 'feature': 6, 'beta': 0.9911493905413188}.
+[I 2019-05-22 16:02:07,718] Finished trial#4 resulted in value: -21253.461146866543. Current best value is -21253.461146866543 with parameters: {'layer_num': 5, 'feature': 7, 'beta': 0.9795522980155958}.
+[I 2019-05-22 16:05:36,973] Finished trial#3 resulted in value: -21267.976083851303. Current best value is -21267.976083851303 with parameters: {'layer_num': 5, 'feature': 9, 'beta': 0.987863061152576}.
+[I 2019-05-22 16:42:16,912] Finished trial#7 resulted in value: -17528.233470723266. Current best value is -21267.976083851303 with parameters: {'layer_num': 5, 'feature': 9, 'beta': 0.987863061152576}.
+[I 2019-05-22 16:50:00,599] Finished trial#6 resulted in value: -21215.044512533317. Current best value is -21267.976083851303 with parameters: {'layer_num': 5, 'feature': 9, 'beta': 0.987863061152576}.
+[I 2019-05-22 16:51:22,162] Finished trial#5 resulted in value: -21080.330634528225. Current best value is -21267.976083851303 with parameters: {'layer_num': 5, 'feature': 9, 'beta': 0.987863061152576}.
+[I 2019-05-22 17:16:27,362] Finished trial#0 resulted in value: -20803.445274912297. Current best value is -21267.976083851303 with parameters: {'layer_num': 5, 'feature': 9, 'beta': 0.987863061152576}.
+[I 2019-05-22 17:20:37,502] Finished trial#1 resulted in value: -16563.948216807312. Current best value is -21267.976083851303 with parameters: {'layer_num': 5, 'feature': 9, 'beta': 0.987863061152576}.
