@@ -22,13 +22,17 @@ def train(idx):
     for i in range(100):
         print("epoch: ", i)
         graph = generate_random_graph(100, 250).adj
+        Timer.start('test')
+        trainer.test()
+        Timer.end('test')
+
         Timer.start('train')
         trainer.train2(graph, 10 * 0.96 ** i, iter_p=2)
         Timer.end('train')
 
-        Timer.start('test')
-        trainer.test()
-        Timer.end('test')
+    Timer.start('test')
+    trainer.test()
+    Timer.end('test')
 
     Timer.end('all')
     Timer.print()

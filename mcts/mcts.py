@@ -12,13 +12,14 @@ from utils.nodehash import NodeHash
 EPS = 1e-30  # cross entropy lossをpi * log(EPS + p)で計算 (log(0)回避)
 
 class MCTS:
-    def __init__(self, gnn):
+    def __init__(self, gnn, performance=False):
         self.optimizer = torch.optim.Adam(gnn.parameters(), lr=0.01)
         self.gnn = gnn
         self.nodehash = NodeHash(5000)
         self.gnnhash = GNNHash()
         # rolloutにおけるrootのrewardのmax
         self.root_max = 0
+        self.performance = performance
 
     # parentのQ(s,a), N(s,a)を更新
     def update_parent(self, node, V):
@@ -121,11 +122,14 @@ class MCTS:
             self.optimizer.step()
             i += size
 
+    # iter_num回rollout
     def search(self, graph, iter_num=10):
         root_node = MCTSNode(graph, self)
         ans = []
         for i in range(iter_num):
-            ans.append(self.rollout(root_node))
+            r = self.rollout(root_node)
+            print(r)
+            ans.append(r)
         return ans
 
     # 毎回pを求めてそれにしたがって1回試行(最後までrolloutする)
@@ -162,8 +166,8 @@ class MCTS:
             graph, reward, done, info = env.step(action)
         return reward
 
+    # 毎回pの確率に従ってaction
     def policy_search(self, graph):
-        self.gnnhash.clear()
         env = MISEnv() if use_dense else MISEnv_Sparse()
         env.set_graph(graph)
 
@@ -172,7 +176,22 @@ class MCTS:
         while not done:
             n, _ = graph.shape
             with torch.no_grad():
-                p, _ = self.gnn(graph)
+                p, v = self.gnn(graph)
             action = np.random.choice(n, p=p.detach().numpy())
+            graph, reward, done, info = env.step(action)
+        return reward
+
+    # vが最も大きくなるactionを選ぶ
+    def greedy_v_search(self, graph):
+        env = MISEnv() if use_dense else MISEnv_Sparse()
+        env.set_graph(graph)
+
+        reward = 0
+        done = False
+        while not done:
+            n, _ = graph.shape
+            with torch.no_grad():
+                p, v = self.gnn(graph)
+            action = v.detach().numpy().argmax()
             graph, reward, done, info = env.step(action)
         return reward

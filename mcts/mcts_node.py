@@ -44,6 +44,7 @@ class MCTSNode:
                 # ランダム試行でrewardの平均、分散を求める
                 # 試行回数のMAXは100に固定
                 NUM = min(max(10, 2 * n), 100)
+                if self.mcts.performance: NUM = 10
                 rewards = np.empty(NUM)
                 ss = make_adj_set(graph)
                 Timer.start('sample')
