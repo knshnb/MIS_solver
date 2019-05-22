@@ -128,6 +128,7 @@ class MCTS:
             ans.append(self.rollout(root_node))
         return ans
 
+    # 毎回pを求めてそれにしたがって1回試行(最後までrolloutする)
     def best_search(self, graph, TAU=0.1, iter_p=1):
         self.gnnhash.clear()
         mse = torch.nn.MSELoss()
@@ -145,3 +146,20 @@ class MCTS:
             action = np.random.choice(n, p=pi)
             graph, reward, done, info = env.step(action)
         return ma, reward
+
+    # 毎回pを求めてそれにしたがって1回試行(rolloutは葉まで)
+    def best_search2(self, graph, TAU=0.1, iter_p=1):
+        self.gnnhash.clear()
+        mse = torch.nn.MSELoss()
+        env = MISEnv() if use_dense else MISEnv_Sparse()
+        env.set_graph(graph)
+
+        reward = 0
+        done = False
+        while not done:
+            n, _ = graph.shape
+            node = MCTSNode(graph, self)
+            pi = self.get_improved_pi(node, TAU, iter_p=iter_p, stop_at_leaf=True)
+            action = np.random.choice(n, p=pi)
+            graph, reward, done, info = env.step(action)
+        return reward
