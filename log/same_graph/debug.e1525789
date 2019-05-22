@@ -1,0 +1,13 @@
+/lustre/gk36/k36042/MIS_solver/mcts/mcts_node.py:81: RuntimeWarning: overflow encountered in power
+  pow_tau = np.power(self.visit_cnt, 1 / TAU)
+/lustre/gk36/k36042/MIS_solver/mcts/mcts_node.py:83: RuntimeWarning: invalid value encountered in true_divide
+  return pow_tau / pow_tau.sum()
+Traceback (most recent call last):
+  File "train_model.py", line 39, in <module>
+    train_and_save(graph0, graph1, "model/" + filename, iter=10)
+  File "train_model.py", line 27, in train_and_save
+    mcts.train(train_graph, 10 * 0.95 ** i)
+  File "/lustre/gk36/k36042/MIS_solver/mcts/mcts.py", line 88, in train
+    action = np.random.choice(n, p=pi)
+  File "mtrand.pyx", line 1144, in mtrand.RandomState.choice
+ValueError: probabilities contain NaN
