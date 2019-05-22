@@ -11,11 +11,12 @@ from utils.counter import Counter
 
 def train(idx):
     np.random.seed()
+    torch.manual_seed(idx)
     test_graphs = [read_graph("data/random/100_250_{}".format(i)).adj for i in range(5)]
 
     gnn = GIN3(layer_num=6)
     gnn.to(device)
-    trainer = MCTSTrainer(gnn, test_graphs, "train2_p2_{}th".format(idx))
+    trainer = MCTSTrainer(gnn, test_graphs, "decay_train2_p2_{}th".format(idx))
 
     Timer.start('all')
 
@@ -43,6 +44,6 @@ def train(idx):
 
 if __name__ == "__main__":
     pool = Pool()
-    pool.map(train, list(range(5)))
+    pool.map(train, list(range(10)))
     pool.close()
     pool.join()
