@@ -13,7 +13,7 @@ EPS = 1e-30  # cross entropy lossをpi * log(EPS + p)で計算 (log(0)回避)
 
 class MCTS:
     def __init__(self, gnn, performance=False):
-        self.optimizer = torch.optim.Adam(gnn.parameters(), lr=0.01)
+        self.optimizer = torch.optim.Adam(gnn.parameters(), lr=0.01, weight_decay=1e-6)
         self.gnn = gnn
         self.nodehash = NodeHash(5000)
         self.gnnhash = GNNHash()
@@ -128,7 +128,7 @@ class MCTS:
         ans = []
         for i in range(iter_num):
             r = self.rollout(root_node)
-            print(r)
+            if self.performance: print(r)
             ans.append(r)
         return ans
 
