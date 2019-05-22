@@ -9,8 +9,8 @@ from gin.gin import GIN3
 from utils.timer import Timer
 
 def best_gin():
-    gnn = GIN3(layer_num=2)
-    gnn.load_state_dict(torch.load("model/test.pth"))
+    gnn = GIN3(layer_num=5, feature=9)
+    gnn.load_state_dict(torch.load("model/train2/new_train2_optuna_tmp_100_5_9_0.987863061152576.pth"))
     gnn.to(device)
     gnn.eval()
     return gnn
@@ -24,7 +24,9 @@ def use_model(graph, TAU, iter_p=1):
 
     Timer.start('all')
 
-    result = mcts.best_search2(graph, TAU=TAU, iter_p=iter_p)
+    # result = mcts.search(graph, iter_num=10)
+    # result = mcts.best_search2(graph, TAU=TAU, iter_p=iter_p)
+    result = mcts.policy_search(graph)
     print("TAU: {}, result: {}".format(TAU, result))
 
     Timer.end('all')
@@ -42,3 +44,5 @@ if __name__ == "__main__":
         pool.apply_async(use_model, args=(graph1, TAU))
     pool.close()
     pool.join()
+
+    # use_model(graph1, 0.3)

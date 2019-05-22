@@ -28,10 +28,10 @@ class MCTS:
             # Qが初期値から一度も更新されていない
             par.Q[node.idx] = normalized_V
         else:
-            self.update_Q(par, normalized_V, node.idx, method="mean")
+            self.update_Q(par, normalized_V, node.idx, method="max")
         par.visit_cnt[node.idx] += 1
 
-    def update_Q(self, node, V, idx, method="mean"):
+    def update_Q(self, node, V, idx, method):
         if method == "mean":
             node.Q[idx] = (node.Q[idx] * node.visit_cnt[idx] + V) / (node.visit_cnt[idx] + 1)
         elif method == "max":
@@ -71,11 +71,11 @@ class MCTS:
         assert not root_node.is_end()
         self.root_max = 0
         n, _ = root_node.graph.shape
-        for i in range(min(200, max(50, n * iter_p))):
+        for i in range(min(500, max(50, n * iter_p))):
             self.rollout(root_node, stop_at_leaf=stop_at_leaf)
         return root_node.pi(TAU)
 
-    def train(self, graph, TAU, batch_size=10, stop_at_leaf=False):
+    def train(self, graph, TAU, batch_size=10, iter_p=2, stop_at_leaf=False):
         self.gnnhash.clear()
         mse = torch.nn.MSELoss()
         env = MISEnv() if use_dense else MISEnv_Sparse()
@@ -92,7 +92,7 @@ class MCTS:
             node = MCTSNode(graph, self)
             means.append(node.reward_mean)
             stds.append(node.reward_std)
-            pi = self.get_improved_pi(node, TAU, stop_at_leaf=stop_at_leaf)
+            pi = self.get_improved_pi(node, TAU, iter_p=iter_p, stop_at_leaf=stop_at_leaf)
             action = np.random.choice(n, p=pi)
             graphs.append(graph)
             actions.append(action)
@@ -129,9 +129,8 @@ class MCTS:
         return ans
 
     # 毎回pを求めてそれにしたがって1回試行(最後までrolloutする)
-    def best_search(self, graph, TAU=0.1, iter_p=1):
+    def best_search1(self, graph, TAU=0.1, iter_p=1):
         self.gnnhash.clear()
-        mse = torch.nn.MSELoss()
         env = MISEnv() if use_dense else MISEnv_Sparse()
         env.set_graph(graph)
 
@@ -150,7 +149,6 @@ class MCTS:
     # 毎回pを求めてそれにしたがって1回試行(rolloutは葉まで)
     def best_search2(self, graph, TAU=0.1, iter_p=1):
         self.gnnhash.clear()
-        mse = torch.nn.MSELoss()
         env = MISEnv() if use_dense else MISEnv_Sparse()
         env.set_graph(graph)
 
@@ -161,5 +159,20 @@ class MCTS:
             node = MCTSNode(graph, self)
             pi = self.get_improved_pi(node, TAU, iter_p=iter_p, stop_at_leaf=True)
             action = np.random.choice(n, p=pi)
+            graph, reward, done, info = env.step(action)
+        return reward
+
+    def policy_search(self, graph):
+        self.gnnhash.clear()
+        env = MISEnv() if use_dense else MISEnv_Sparse()
+        env.set_graph(graph)
+
+        reward = 0
+        done = False
+        while not done:
+            n, _ = graph.shape
+            with torch.no_grad():
+                p, _ = self.gnn(graph)
+            action = np.random.choice(n, p=p.detach().numpy())
             graph, reward, done, info = env.step(action)
         return reward

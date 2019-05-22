@@ -1,3 +1,4 @@
+from multiprocessing import Pool
 from config import device
 import numpy as np
 import torch
@@ -8,12 +9,12 @@ from gin.gin import GIN3
 from utils.timer import Timer
 from utils.counter import Counter
 
-if __name__ == "__main__":
+def train(idx):
     test_graphs = [read_graph("data/random/100_250_{}".format(i)).adj for i in range(5)]
 
     gnn = GIN3(layer_num=6)
     gnn.to(device)
-    trainer = MCTSTrainer(gnn, test_graphs, "train2_p2_0th")
+    trainer = MCTSTrainer(gnn, test_graphs, "train2_p2_{}th".format(idx))
 
     Timer.start('all')
 
@@ -34,3 +35,9 @@ if __name__ == "__main__":
 
     trainer.save_model()
     trainer.save_test_result()
+
+if __name__ == "__main__":
+    pool = Pool()
+    pool.map(train, list(range(5)))
+    pool.close()
+    pool.join()
