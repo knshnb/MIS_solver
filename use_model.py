@@ -16,6 +16,7 @@ best_model_names = [
     "model/train1_100_p2_1th.pth",
     "model/train1_100_p2_4th.pth",
     "model/train1_100_p2_3th.pth",
+    "model/final_train1_p5_8th.pth",
 ]
 
 def best_gin1():
