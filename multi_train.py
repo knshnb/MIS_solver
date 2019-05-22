@@ -10,6 +10,7 @@ from utils.timer import Timer
 from utils.counter import Counter
 
 def train(idx):
+    np.random.seed()
     test_graphs = [read_graph("data/random/100_250_{}".format(i)).adj for i in range(5)]
 
     gnn = GIN3(layer_num=6)
