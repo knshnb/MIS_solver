@@ -8,6 +8,16 @@ from mcts.mcts import MCTS
 from gin.gin import GIN3
 from utils.timer import Timer
 
+# layer_num = 6, feature = 8
+best_model_names = [
+    "model/decay_train2_p5_0th.pth",
+    "model/final_train2_p5_9th.pth",
+    "model/train1_100_p5_0th.pth",
+    "model/train1_100_p2_1th.pth",
+    "model/train1_100_p2_4th.pth",
+    "model/train1_100_p2_3th.pth",
+]
+
 def best_gin1():
     gnn = GIN3(layer_num=2, feature=8)
     gnn.load_state_dict(torch.load("model/train1/save_100_100_2.pth"))
@@ -15,9 +25,9 @@ def best_gin1():
     gnn.eval()
     return gnn
 
-def best_gin2():
+def best_gin2(filename):
     gnn = GIN3(layer_num=6, feature=8)
-    gnn.load_state_dict(torch.load("model/decay_train2_p5_0th.pth"))
+    gnn.load_state_dict(torch.load(filename))
     gnn.to(device)
     gnn.eval()
     return gnn
@@ -26,15 +36,11 @@ def use_model(gnn, name, graph, iter_num=1000):
     # seedを初期化しないと全部同じになってしまう！
     np.random.seed()
 
-    gnn = best_gin2()
     mcts = MCTS(gnn, performance=True)
 
     Timer.start('all')
 
     result = mcts.search(graph, iter_num=iter_num)
-    # result = mcts.best_search2(graph, TAU=TAU, iter_p=iter_p)
-    # result = mcts.best_search2(graph)
-    # result = mcts.greedy_v_search(graph)
     print("graph: {}, result: {}".format(name, result))
 
     Timer.end('all')
@@ -43,13 +49,24 @@ def use_model(gnn, name, graph, iter_num=1000):
 if __name__ == "__main__":
     graphs = {
         "100_250_0": read_graph("data/random/100_250_0").adj,
-        "cora": read_graph("data/cora").adj,
-        "siteseer": read_graph("data/citeseer").adj,
+        # "cora": read_graph("data/cora").adj,
+        # "siteseer": read_graph("data/citeseer").adj,
+
+        # "pubmed": read_graph("data/pubmed").adj,
+
+        # "1000_2500_0": read_graph("data/random/1000_2500_0").adj,
+        # "1000_2500_1": read_graph("data/random/1000_2500_1").adj,
+        # "1000_2500_2": read_graph("data/random/1000_2500_2").adj,
+        # "1000_2500_3": read_graph("data/random/1000_2500_3").adj,
+        # "1000_2500_4": read_graph("data/random/1000_2500_4").adj,
+        # "1000_2500_5": read_graph("data/random/1000_2500_5").adj,
+        # "1000_2500_6": read_graph("data/random/1000_2500_6").adj,
+        # "1000_2500_7": read_graph("data/random/1000_2500_7").adj,
+        # "1000_2500_8": read_graph("data/random/1000_2500_8").adj,
+        # "1000_2500_9": read_graph("data/random/1000_2500_9").adj,
     }
-    gnns = [
-        best_gin1(),
-        best_gin2(),
-    ]
+    gnns = [best_gin2(name) for name in best_model_names]
+    gnns.append(best_gin1())
 
     print(multiprocessing.cpu_count())
     pool = Pool()
@@ -59,4 +76,6 @@ if __name__ == "__main__":
     pool.close()
     pool.join()
 
-    # use_model("cora", 0.3)
+    # for name, graph in graphs.items():
+    #     for gnn in gnns:
+    #         use_model(gnn, name, graph)
