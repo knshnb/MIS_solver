@@ -1,3 +1,4 @@
+import time
 import numpy as np
 from config import use_dense
 import torch
@@ -130,6 +131,18 @@ class MCTS:
             r = self.rollout(root_node)
             if self.performance: print(r)
             ans.append(r)
+        return ans
+
+    # iter_num回rollout
+    def search_for_exp(self, graph, time_limit=600, min_iter_num=100):
+        now = time.time()
+        root_node = MCTSNode(graph, self)
+        ans = []
+        cnt = 0
+        while cnt < min_iter_num or time.time() - now < time_limit:
+            r = self.rollout(root_node)
+            ans.append(r)
+            cnt += 1
         return ans
 
     # 毎回pを求めてそれにしたがって1回試行(最後までrolloutする)
