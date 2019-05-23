@@ -36,7 +36,7 @@ def best_gin2(filename):
     gnn.eval()
     return gnn
 
-def use_model(gnn, name, graph, iter_num=1000):
+def use_model(gnn, name, graph, iter_num=100):
     # seedを初期化しないと全部同じになってしまう！
     np.random.seed()
 
@@ -75,6 +75,15 @@ if __name__ == "__main__":
         # "ego-facebook": read_graph("data/facebook2").adj,
         # "ego-gplus": read_graph("data/gplus2").adj,
         # "ego-twitter": read_graph("data/twitter2").adj,
+
+        "gen200_p0.9_44.clq-compliment": read_graph("data/gen200_p0.9_44.clq-compliment").adj,
+        "gen200_p0.9_55.clq-compliment": read_graph("data/gen200_p0.9_55.clq-compliment").adj,
+        "gen400_p0.9_55.clq-compliment": read_graph("data/gen400_p0.9_55.clq-compliment").adj,
+        "gen400_p0.9_65.clq-compliment": read_graph("data/gen400_p0.9_65.clq-compliment").adj,
+        "gen400_p0.9_75.clq-compliment": read_graph("data/gen400_p0.9_75.clq-compliment").adj,
+
+        "btcalpha": read_graph("data/btcalpha").adj,
+        "btcotc": read_graph("data/btcotc").adj,
     }
     gnns = [best_gin2(name) for name in best_model_names]
     gnns.append(best_gin1())
