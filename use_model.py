@@ -17,6 +17,9 @@ best_model_names = [
     "model/train1_100_p2_4th.pth",
     "model/train1_100_p2_3th.pth",
     "model/final_train1_p5_8th.pth",
+    "model/nemui_train1_p5_16th.pth",
+    "model/final_train1_p5_1th.pth",
+    "model/final_train1_p5_3th.pth",
 ]
 
 def best_gin1():
@@ -49,6 +52,7 @@ def use_model(gnn, name, graph, iter_num=1000):
 
 if __name__ == "__main__":
     graphs = {
+        # "10_25_0": read_graph("data/random/10_25_0").adj,
         # "100_250_0": read_graph("data/random/100_250_0").adj,
         # "cora": read_graph("data/cora").adj,
         # "siteseer": read_graph("data/citeseer").adj,
@@ -68,9 +72,9 @@ if __name__ == "__main__":
 
         # "gen400-p0.9-55": read_graph("data/gen400-p0.9-55").adj,
 
-        "ego-facebook": read_graph("data/ego-facebook").adj,
-        "ego-gplus": read_graph("data/ego-gplus").adj,
-        "ego-twitter": read_graph("data/ego-twitter").adj,
+        # "ego-facebook": read_graph("data/facebook2").adj,
+        # "ego-gplus": read_graph("data/gplus2").adj,
+        # "ego-twitter": read_graph("data/twitter2").adj,
     }
     gnns = [best_gin2(name) for name in best_model_names]
     gnns.append(best_gin1())
