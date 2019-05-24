@@ -3,7 +3,7 @@ import time
 class Timer:
     logs = {}
     ss = {}
-    # 複数スレッドで使用するときはactiveをFalseにする！
+    # set active False in multithreading
     active = True
 
     @staticmethod

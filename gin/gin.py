@@ -3,7 +3,7 @@ import torch
 from gin.mlp import MLP
 import numpy as np
 
-# GPU対応はGIN3だけ
+# GIN is not supported on GPU
 class GIN(torch.nn.Module):
     def __init__(self, layer_num=2, feature=8, M=1, dropout=0.5):
         super(GIN, self).__init__()
@@ -28,7 +28,7 @@ class GIN(torch.nn.Module):
                 # x = torch.nn.functional.dropout(x, self.dropout, training=self.training)
         return torch.nn.functional.softmax(x, dim=0)
 
-# torch.sqrt(0)のgradがnanになるのでstdを自分で定義
+# avoid nan on torch.sqrt(0) in torch.std
 def my_std(a, mean):
     return torch.sqrt((a - mean).pow(2).mean() + 1e-10)
 
@@ -75,7 +75,7 @@ class GIN3(torch.nn.Module):
         
         policy = torch.nn.functional.softmax(self.policy_output_layer(x, adj), dim=0)[:, 0]
         value = self.value_output_layer(x, adj)[:, 0]
-        # valueを平均0, 分散1に正規化
+        # normalize value (mean 0, std 1)
         value_mean = value.mean()
         normalized_value = (value - value_mean) / my_std(value, value_mean)
         return policy.cpu(), normalized_value.cpu()

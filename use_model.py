@@ -20,7 +20,6 @@ def best_gins():
 
 def use_model(t):
     gnn, name, graph = t
-    # seedを初期化しないと全部同じになってしまう！
     np.random.seed()
 
     mcts = MCTS(gnn, performance=True)

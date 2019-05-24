@@ -10,7 +10,7 @@ from utils.timer import Timer
 from utils.gnnhash import GNNHash
 from utils.nodehash import NodeHash
 
-EPS = 1e-30  # cross entropy lossをpi * log(EPS + p)で計算 (log(0)回避)
+EPS = 1e-30  # cross entropy loss: pi * log(EPS + p) (in order to avoid log(0))
 
 class MCTS:
     def __init__(self, gnn, performance=False):
@@ -18,16 +18,16 @@ class MCTS:
         self.gnn = gnn
         self.nodehash = NodeHash(5000)
         self.gnnhash = GNNHash()
-        # rolloutにおけるrootのrewardのmax
+        # max reward of root in rollout
         self.root_max = 0
         self.performance = performance
 
-    # parentのQ(s,a), N(s,a)を更新
+    # update Q(s,a), N(s,a) of parent
     def update_parent(self, node, V):
         par = node.parent
         normalized_V = par.normalize_reward(V)
         if par.visit_cnt[node.idx] == 0:
-            # Qが初期値から一度も更新されていない
+            # Q is an initial value
             par.Q[node.idx] = normalized_V
         else:
             self.update_Q(par, normalized_V, node.idx, method="mean")
@@ -59,7 +59,7 @@ class MCTS:
                     finish = True
             node = node.children[v]
 
-        # Vをrootに向かって伝播させていく
+        # backpropagate V
         V = node.state_value()
         while node is not root_node:
             V += 1
@@ -68,7 +68,7 @@ class MCTS:
         self.root_max = max(self.root_max, V)
         return V
 
-    # MCTSによって改善されたpiを返す
+    # return improved pi by MCTS
     def get_improved_pi(self, root_node, TAU, iter_p=2, stop_at_leaf=False):
         assert not root_node.is_end()
         self.root_max = 0
@@ -115,7 +115,7 @@ class MCTS:
                 p, v = self.gnn(graphs[idx], True)
                 Timer.end('gnn')
                 n, _ = graphs[idx].shape
-                # mean, stdを用いて正規化
+                # normalize z with mean, std
                 z = torch.tensor(((T - idx) - means[idx]) / stds[idx])
                 loss += mse(z, v[actions[idx]]) - (torch.tensor(pis[idx]) * torch.log(p + EPS)).sum()
             loss /= size
@@ -123,7 +123,7 @@ class MCTS:
             self.optimizer.step()
             i += size
 
-    # iter_num回rollout
+    # rollout iter_num times
     def search(self, graph, iter_num=10):
         root_node = MCTSNode(graph, self)
         ans = []
@@ -133,7 +133,8 @@ class MCTS:
             ans.append(r)
         return ans
 
-    # iter_num回rollout
+    # rollout iter_num times
+    def search(self, graph, iter_num=10):
     def search_for_exp(self, graph, time_limit=600, min_iter_num=100):
         now = time.time()
         root_node = MCTSNode(graph, self)
@@ -145,7 +146,7 @@ class MCTS:
             cnt += 1
         return ans
 
-    # 毎回pを求めてそれにしたがって1回試行(最後までrolloutする)
+    # get improved pi for every action (by rolling out until end)
     def best_search1(self, graph, TAU=0.1, iter_p=1):
         self.gnnhash.clear()
         env = MISEnv() if use_dense else MISEnv_Sparse()
@@ -163,7 +164,7 @@ class MCTS:
             graph, reward, done, info = env.step(action)
         return ma, reward
 
-    # 毎回pを求めてそれにしたがって1回試行(rolloutは葉まで)
+    # get improved pi for every action (by rolling out only until leaf)
     def best_search2(self, graph, TAU=0.1, iter_p=1):
         self.gnnhash.clear()
         env = MISEnv() if use_dense else MISEnv_Sparse()
@@ -179,7 +180,7 @@ class MCTS:
             graph, reward, done, info = env.step(action)
         return reward
 
-    # 毎回pの確率に従ってaction
+    # use only p
     def policy_search(self, graph):
         env = MISEnv() if use_dense else MISEnv_Sparse()
         env.set_graph(graph)
@@ -194,7 +195,7 @@ class MCTS:
             graph, reward, done, info = env.step(action)
         return reward
 
-    # vが最も大きくなるactionを選ぶ
+    # used only v
     def greedy_v_search(self, graph):
         env = MISEnv() if use_dense else MISEnv_Sparse()
         env.set_graph(graph)

@@ -18,11 +18,11 @@ class MCTSTrainer:
         self.test_result = []
         self.filename = filename
 
-    # 終了するまで展開
+    # rollout until the end
     def train1(self, graph, TAU, batch_size=10, iter_p=2):
         self.mcts.train(graph, TAU, batch_size=batch_size, iter_p=iter_p)
 
-    # 葉に到達したら終了
+    # rollout only until leaf
     def train2(self, graph, TAU, batch_size=10, iter_p=2):
         self.mcts.train(graph, TAU, batch_size=batch_size, stop_at_leaf=True, iter_p=2)
 

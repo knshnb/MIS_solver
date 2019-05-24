@@ -11,9 +11,7 @@ from utils.gnnhash import GNNHash
 # p(s) = gnn(s).policy
 # v(s) = gnn(s).value
 ALPHA = 2  # ucb(s,a) = Q(s,a) + ALPHA * |V| * P(s,a) / (1 + N(s,a))
-# TAU = 0.5  # N(s,a)からpiを求めるときの温度
 EPS = 1e-10
-# TODO: TAUを学習が進むに連れて小さくしていく
 
 class MCTSNode:
     def __init__(self, graph, mcts, idx=-1, parent=None):
@@ -41,8 +39,7 @@ class MCTSNode:
             if self.mcts.nodehash.has(hash):
                 self.reward_mean, self.reward_std = self.mcts.nodehash.get(hash)
             else:
-                # ランダム試行でrewardの平均、分散を求める
-                # 試行回数のMAXは100に固定
+                # calculate reward mean and std by random sampling
                 NUM = min(max(10, 2 * n), 100)
                 if self.mcts.performance: NUM = 10
                 rewards = np.empty(NUM)
@@ -53,7 +50,7 @@ class MCTSNode:
                     rewards[i] = randomplay(ss)
                 Timer.end('sample')
                 self.reward_mean = rewards.mean()
-                # stdを0にしないようにEPSを足す
+                # std shoud not be 0!
                 self.reward_std = rewards.std(ddof=1) + EPS
                 assert not np.isnan(self.reward_std)
                 self.mcts.nodehash.save(hash, self.reward_mean, self.reward_std)
@@ -70,7 +67,6 @@ class MCTSNode:
     def normalize_reward(self, reward):
         return (reward - self.reward_mean) / self.reward_std
 
-    # selfがNoneでないときのみ呼ばれる
     def best_child(self):
         n, _ = self.graph.shape
         ucb = self.Q + ALPHA * np.sqrt(self.visit_cnt.sum()) * self.P / (1 + self.visit_cnt)

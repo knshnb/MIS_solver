@@ -1,6 +1,6 @@
 class Counter:
     cnt = {}
-    # 複数スレッドで使用するときはactiveをFalseにする！
+    # set active False in multithreading
     active = True
 
     @staticmethod

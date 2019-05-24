@@ -10,7 +10,7 @@ from utils.timer import Timer
 from utils.counter import Counter
 import optuna
 
-# これを最小化するようなパラメータを見つけてくれる
+# minimize the return value
 def objective(trial):
     test_graphs = [read_graph("data/random/1000_2500_{}".format(i)).adj for i in range(5)]
 
