@@ -1,4 +1,4 @@
-# Training Graph Convolutional Networks by Reinforcement Learning for Solving NP-hard Problems
+# Solving NP-Hard Problems on Graphs by Reinforcement Learning without Domain Knowledge
 Pytorch implementation of the above paper
 
 ## Getting Started
@@ -10,11 +10,13 @@ pip install -r requirements.txt
 
 ## Directory Structure
 - environ: graph environment (MDP)
-- gcn: graph convolutional netoworks
-- policy: predict one action from graph
-- agent: get a solution (MIS) from graph based on policy
+- gcn: graph convolutional netoworks model
+- gin: graph isomophism networks model
+- policy: policy gradient method (REINFORCE)
 - trainer: train with REINFORCE
+- mcts: Monte Carlo Tree Search
+- utils: utils
 
-## Reference
+## Reference on Implementation
 - https://github.com/tkipf/pygcn
-- "Semi-Supervised Classification with Graph Convolutional Networks"
+- https://github.com/weihua916/powerful-gnns
