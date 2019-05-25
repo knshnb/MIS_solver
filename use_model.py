@@ -10,7 +10,7 @@ from utils.timer import Timer
 
 def best_gin(idx):
     gnn = GIN3(layer_num=6, feature=8)
-    gnn.load_state_dict(torch.load("model/modified_p5_{}th.pth".format(idx)))
+    gnn.load_state_dict(torch.load("model/decay_joe_test_p2_400_n200m500{}th.pth".format(idx)))
     gnn.to(device)
     gnn.eval()
     return gnn
@@ -38,7 +38,7 @@ def use_model(t):
 if __name__ == "__main__":
     gnns = best_gins()
 
-    filename = "random/10_25_0"
+    filename = "random/500_1250_8"
     graph = read_graph("data/" + filename).adj
     print(filename)
 
