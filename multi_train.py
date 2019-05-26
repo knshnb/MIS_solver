@@ -16,19 +16,19 @@ def train(idx):
 
     gnn = GIN3(layer_num=6)
     gnn.to(device)
-    trainer = MCTSTrainer(gnn, test_graphs, "decay_joe_test_p5_200_n200m500{}th".format(idx))
+    trainer = MCTSTrainer(gnn, test_graphs, "joe_train1_p5_0.98_100_n300m750_{}th".format(idx))
 
     Timer.start('all')
 
-    for i in range(200):
+    for i in range(100):
         print("epoch: ", i)
-        graph = generate_random_graph(200, 500).adj
+        graph = generate_random_graph(300, 750).adj
         Timer.start('test')
         trainer.test()
         Timer.end('test')
 
         Timer.start('train')
-        trainer.train2(graph, 10 * 0.98 ** i, iter_p=5)
+        trainer.train1(graph, 10 * 0.98 ** i, iter_p=5)
         Timer.end('train')
 
     Timer.start('test')
