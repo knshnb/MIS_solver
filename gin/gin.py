@@ -48,6 +48,9 @@ class GIN3(torch.nn.Module):
 
     # return (policy, value)
     def forward(self, adj, force_dense=False):
+        # degree information
+        cur = torch.tensor(adj.sum(axis=0).reshape(adj.shape[0], 1))
+
         if use_dense or force_dense:
             if not use_dense:
                 adj = adj.todense().A
@@ -66,15 +69,14 @@ class GIN3(torch.nn.Module):
             m = len(x)
             adj = torch.sparse.FloatTensor(torch.LongTensor([x, y]), torch.Tensor(np.ones(m)), torch.Size(list(adj.shape))).to(device)
 
-        x = torch.ones((adj.shape[0], 1), dtype=torch.float32)
-        x = x.to(device)
+        cur = cur.to(device)
         for i, layer in enumerate(self.layers):
-            x = layer(x, adj)
-            x = torch.nn.functional.relu(x)
-            x = torch.nn.functional.dropout(x, self.dropout, training=self.training)
+            cur = layer(cur, adj)
+            cur = torch.nn.functional.relu(cur)
+            cur = torch.nn.functional.dropout(cur, self.dropout, training=self.training)
         
-        policy = torch.nn.functional.softmax(self.policy_output_layer(x, adj), dim=0)[:, 0]
-        value = self.value_output_layer(x, adj)[:, 0]
+        policy = torch.nn.functional.softmax(self.policy_output_layer(cur, adj), dim=0)[:, 0]
+        value = self.value_output_layer(cur, adj)[:, 0]
         # normalize value (mean 0, std 1)
         value_mean = value.mean()
         normalized_value = (value - value_mean) / my_std(value, value_mean)

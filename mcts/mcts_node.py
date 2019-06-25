@@ -10,7 +10,7 @@ from utils.gnnhash import GNNHash
 
 # p(s) = gnn(s).policy
 # v(s) = gnn(s).value
-ALPHA = 2  # ucb(s,a) = Q(s,a) + ALPHA * |V| * P(s,a) / (1 + N(s,a))
+ALPHA = 2  # ucb(s,a) = Q(s,a) + ALPHA * sqrt(N(s,a)) * P(s,a) / (1 + N(s,a))
 EPS = 1e-10
 
 class MCTSNode:
@@ -62,7 +62,7 @@ class MCTSNode:
         if self.is_end():
             return 0.
         else:
-            return self.Q.max()
+            return self.reward_mean + self.Q.max() * self.reward_std
 
     def normalize_reward(self, reward):
         return (reward - self.reward_mean) / self.reward_std
