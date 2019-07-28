@@ -39,3 +39,13 @@ def randomplay(ss):
             ng |= ss[v]
             ret += 1
     return ret
+
+def randomplay_tsp(graph, dist_from_prev, dist_to_start):
+    n = graph.shape[0]
+    vs = [i for i in range(n)]
+    np.random.shuffle(vs)
+    ret = dist_from_prev[vs[0]]
+    for i in range(1, n):
+        ret += graph[vs[i - 1]][vs[i]]
+    ret += dist_to_start[vs[-1]]
+    return ret

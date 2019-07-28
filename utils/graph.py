@@ -46,6 +46,28 @@ class WeightedDenseGraph:
         self.adj[a][b] = w
         self.adj[b][a] = w
 
+def normalize(coords):
+    n = len(coords)
+    nax = 0
+    for i in range(n):
+        for j in range(i + 1, n):
+            d = ((coords[i][0] - coords[j][0]) ** 2 + (coords[i][1] - coords[j][1]) ** 2) ** 0.5
+            nax = max(nax, d)
+    for i in range(n):
+        coords[i][0] /= nax
+        coords[i][1] /= nax
+    return coords
+    
+def convert_coordinates_to_graph(n, coords):
+    coords = normalize(coords)
+    g = WeightedDenseGraph(n)
+    for i in range(n):
+        for j in range(i + 1, n):
+            d = ((coords[i][0] - coords[j][0]) ** 2 + (coords[i][1] - coords[j][1]) ** 2) ** 0.5
+            # take inverse to weigh nearness
+            g.add_edge(i, j, 1 / d)
+    return g
+
 def generate_random_graph(n, m):
     g = Graph(n, use_dense)
     acc = 0
@@ -59,6 +81,14 @@ def generate_random_graph(n, m):
     g.build()
     assert g.m == m
     return g
+
+def generate_random_graph_tsp(n):
+    coords = []
+    for _ in range(n):
+        x = np.random.randint(101010)
+        y = np.random.randint(101010)
+        coords.append([x, y])
+    return convert_coordinates_to_graph(n, coords)
 
 def read_graph(filename):
     f = open(filename)
@@ -78,17 +108,11 @@ def read_euc_2d_graph(file_prefix):
     f = open(file_prefix)
     text = f.readlines()
     n = int(text[0])
-    xs = []
-    ys = []
-    g = WeightedDenseGraph(n)
+    coords = []
     for i in range(n):
         _, x, y = map(int, text[1 + i].split())
-        xs.append(x)
-        ys.append(y)
-    for i in range(n):
-        for j in range(i + 1, n):
-            g.add_edge(i, j, ((xs[i] - xs[j]) ** 2 + (ys[i] - ys[j]) ** 2) ** 0.5)
-    return g
+        coords.append([x, y])
+    return convert_coordinates_to_graph(n, coords)
 
 def write_graph(graph, filename):
     n, _ = graph.adj.shape
