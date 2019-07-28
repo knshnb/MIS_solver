@@ -38,6 +38,14 @@ class Graph:
                         self.m += 1
             self.adj = coo_matrix((np.ones(2 * self.m, dtype=np.float32), (np.array(x), np.array(y))), shape=(self.n, self.n))
 
+class WeightedDenseGraph:
+    def __init__(self, n):
+        self.n = n
+        self.adj = xp.zeros((n, n), dtype=xp.float32)
+    def add_edge(self, a, b, w):
+        self.adj[a][b] = w
+        self.adj[b][a] = w
+
 def generate_random_graph(n, m):
     g = Graph(n, use_dense)
     acc = 0
@@ -64,6 +72,22 @@ def read_graph(filename):
     print("Finish reading file {}".format(filename))
     g.build()
     f.close()
+    return g
+
+def read_euc_2d_graph(file_prefix):
+    f = open(file_prefix)
+    text = f.readlines()
+    n = int(text[0])
+    xs = []
+    ys = []
+    g = WeightedDenseGraph(n)
+    for i in range(n):
+        _, x, y = map(int, text[1 + i].split())
+        xs.append(x)
+        ys.append(y)
+    for i in range(n):
+        for j in range(i + 1, n):
+            g.add_edge(i, j, ((xs[i] - xs[j]) ** 2 + (ys[i] - ys[j]) ** 2) ** 0.5)
     return g
 
 def write_graph(graph, filename):
