@@ -13,9 +13,9 @@ import datetime
 file_identifier = "tsp"
 layer_num = 6
 feature = 8
-node = 50
+node = 10
 iter_p = 5
-epoch = 100
+epoch = 10
 train_method = "train1"
 
 file_prefix = "{}_{}_{}_{}_{}_{}_{}_{}".format(file_identifier, layer_num, feature, node, iter_p, epoch, train_method, datetime.datetime.today())
@@ -25,7 +25,7 @@ test_files = ['data/tsp/tsp_001_a280', 'data/tsp/tsp_002_berlin52', 'data/tsp/ts
 def train(idx):
     np.random.seed()
     torch.manual_seed(idx)
-    test_graphs = [read_euc_2d_graph(f).adj for f in test_files]
+    test_graphs = [read_euc_2d_graph(f) for f in test_files]
 
     gnn = GIN3(layer_num=layer_num, feature=feature)
     gnn.to(device)
@@ -35,7 +35,8 @@ def train(idx):
 
     for i in range(epoch):
         print("epoch: ", i)
-        graph = generate_random_graph_tsp(node).adj
+        graph, scale = generate_random_graph_tsp(node)
+        graph = graph.adj
         if i and i % 5 == 0:
             Timer.start('test')
             trainer.test()

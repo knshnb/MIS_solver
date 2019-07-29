@@ -25,7 +25,14 @@ class MCTSTSPTrainer:
         self.mcts.train(graph, TAU, batch_size=batch_size, stop_at_leaf=True, iter_p=2)
 
     def test(self):
-        result = [self.mcts.search(graph) for graph in self.test_graphs]
+        # result = [self.mcts.search(graph) for graph in self.test_graphs]
+        result = []
+        for graph in self.test_graphs:
+            graph, scale = graph
+            ans = self.mcts.search(graph.adj)
+            for i in range(len(ans)):
+                ans[i] *= scale
+            result.append(ans)
         print(result)
         self.test_result.append(result)
 

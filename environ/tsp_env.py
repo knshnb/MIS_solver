@@ -38,10 +38,10 @@ class TSPEnv:
         Timer.start('env')
         n = self.A.shape[0]
         self.ans.append(self.to_vertex[action])
-        self.reward -= self.dist_from_prev[action]
+        self.reward -= 1 / self.dist_from_prev[action]
 
         if n == 1:
-            self.reward -= self.dist_to_start[action]
+            self.reward -= 1 / self.dist_to_start[action]
         
         mask = np.arange(n) != action
         self.to_vertex = self.to_vertex[mask]

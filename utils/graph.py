@@ -48,25 +48,26 @@ class WeightedDenseGraph:
 
 def normalize(coords):
     n = len(coords)
-    nax = 0
+    scale = 0
     for i in range(n):
         for j in range(i + 1, n):
             d = ((coords[i][0] - coords[j][0]) ** 2 + (coords[i][1] - coords[j][1]) ** 2) ** 0.5
-            nax = max(nax, d)
+            scale = max(scale, d)
     for i in range(n):
-        coords[i][0] /= nax
-        coords[i][1] /= nax
-    return coords
+        coords[i][0] /= scale
+        coords[i][1] /= scale
+    return coords, scale
     
 def convert_coordinates_to_graph(n, coords):
-    coords = normalize(coords)
+    coords, scale = normalize(coords)
     g = WeightedDenseGraph(n)
     for i in range(n):
         for j in range(i + 1, n):
+            # TSPLIB rule
             d = ((coords[i][0] - coords[j][0]) ** 2 + (coords[i][1] - coords[j][1]) ** 2) ** 0.5
             # take inverse to weigh nearness
             g.add_edge(i, j, 1 / d)
-    return g
+    return g, scale
 
 def generate_random_graph(n, m):
     g = Graph(n, use_dense)

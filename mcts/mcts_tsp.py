@@ -49,9 +49,9 @@ class MCTSTSP:
             if node.is_end(): break
             v = node.best_child()
             if node.graph.shape[0] == 1:
-                dists.append(node.dist_from_prev[v] + node.dist_to_start[v])
+                dists.append(1 / node.dist_from_prev[v] + 1 / node.dist_to_start[v])
             else:
-                dists.append(node.dist_from_prev[v])
+                dists.append(1 / node.dist_from_prev[v])
             if node.children[v] is None:
                 env = TSPEnv()
                 # start_nodeどっかで保持しておきたいね。とりあえずここは無理やり0にしておく
@@ -66,6 +66,7 @@ class MCTSTSP:
         V = node.state_value()
         idx = len(dists) - 1
         while node is not root_node:
+            assert idx >= 0
             V -= dists[idx]
             idx -= 1
             self.update_parent(node, V)
