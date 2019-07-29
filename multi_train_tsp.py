@@ -8,16 +8,17 @@ from mcts.mcts_trainer_tsp import MCTSTSPTrainer
 from gin.gin_tsp import GIN3
 from utils.timer import Timer
 from utils.counter import Counter
+import datetime
 
 file_identifier = "tsp"
 layer_num = 6
 feature = 8
-node = 100
+node = 50
 iter_p = 5
 epoch = 100
 train_method = "train1"
 
-file_prefix = "{}_{}_{}_{}_{}_{}_{}".format(file_identifier, layer_num, feature, node, iter_p, epoch, train_method)
+file_prefix = "{}_{}_{}_{}_{}_{}_{}_{}".format(file_identifier, layer_num, feature, node, iter_p, epoch, train_method, datetime.datetime.today())
 
 test_files = ['data/tsp/tsp_001_a280', 'data/tsp/tsp_002_berlin52', 'data/tsp/tsp_003_bier127']
 
