@@ -31,7 +31,7 @@ class MCTSTSPTrainer:
             graph, scale = graph
             ans = self.mcts.search(graph.adj)
             for i in range(len(ans)):
-                ans[i] *= scale
+                ans[i] *= -scale
             result.append(ans)
         print(result)
         self.test_result.append(result)

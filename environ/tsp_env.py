@@ -31,17 +31,17 @@ class TSPEnv:
         vs = vs[mask]
         self.to_vertex = vs
         self.ans = []
-        self.reward = 0  # negative distance
         return self.A, self.dist_from_prev, self.dist_to_start
 
     def step(self, action):  # action: index of a vertex
         Timer.start('env')
         n = self.A.shape[0]
         self.ans.append(self.to_vertex[action])
-        self.reward -= 1 / self.dist_from_prev[action]
+        dif = 0
+        dif -= 1 / self.dist_from_prev[action]
 
         if n == 1:
-            self.reward -= 1 / self.dist_to_start[action]
+            dif -= 1 / self.dist_to_start[action]
         
         mask = np.arange(n) != action
         self.to_vertex = self.to_vertex[mask]
@@ -51,4 +51,4 @@ class TSPEnv:
 
         assert self.A.shape[0] == 0 or self.A.shape[0] == self.A.shape[1]
         Timer.end('env')
-        return self.A, self.dist_from_prev, self.dist_to_start, self.reward, self.A.shape[0] == 0, {'ans': self.ans}
+        return self.A, self.dist_from_prev, self.dist_to_start, dif, self.A.shape[0] == 0, {'ans': self.ans}

@@ -15,8 +15,6 @@ class MCTSTSP:
         self.gnn = gnn
         self.nodehash = NodeHashTSP()
         self.gnnhash = GNNHash()
-        # max reward of root in rollout
-        self.root_max = -1e100
         self.performance = performance
 
     # update Q(s,a), N(s,a) of parent
@@ -56,7 +54,7 @@ class MCTSTSP:
                 env = TSPEnv()
                 # start_nodeどっかで保持しておきたいね。とりあえずここは無理やり0にしておく
                 env.set_graph(node.graph, 0, node.dist_from_prev, node.dist_to_start)
-                next_graph, next_dist_from_prev, next_dist_to_start, r, done, info = env.step(v)
+                next_graph, next_dist_from_prev, next_dist_to_start, _, done, info = env.step(v)
                 node.children[v] = TSPMCTSNode(next_graph, next_dist_from_prev, next_dist_to_start, self, idx=v, parent=node)
                 if stop_at_leaf:
                     finish = True
@@ -65,19 +63,20 @@ class MCTSTSP:
         # backpropagate V
         V = node.state_value()
         idx = len(dists) - 1
+        visit_root = False
         while node is not root_node:
             assert idx >= 0
+            if idx == 0: visit_root = True
             V -= dists[idx]
             idx -= 1
             self.update_parent(node, V)
             node = node.parent
-        self.root_max = max(self.root_max, V)
+        assert visit_root
         return V
 
     # return improved pi by MCTS
     def get_improved_pi(self, root_node, TAU, iter_p=2, stop_at_leaf=False):
         assert not root_node.is_end()
-        self.root_max = -1e100
         n, _ = root_node.graph.shape
         for i in range(min(500, max(50, n * iter_p))):
             self.rollout(root_node, stop_at_leaf=stop_at_leaf)
@@ -95,6 +94,7 @@ class MCTSTSP:
         pis = []
         means = []
         stds = []
+        difs = []
         done = False
         while not done:
             n, _ = graph.shape
@@ -106,9 +106,12 @@ class MCTSTSP:
             states.append([graph, dist_from_prev, dist_to_start])
             actions.append(action)
             pis.append(pi)
-            graph, dist_from_prev, dist_to_start, reward, done, info = env.step(action)
+            graph, dist_from_prev, dist_to_start, dif, done, info = env.step(action)
+            difs.append(dif)
 
         T = len(states)
+        for i in range(T - 2, -1, -1):
+            difs[i] += difs[i + 1]
         idxs = [i for i in range(T)]
         np.random.shuffle(idxs)
         i = 0
@@ -123,7 +126,7 @@ class MCTSTSP:
                 p, v = self.gnn(graph, dist_from_prev, dist_to_start, True)
                 Timer.end('gnn')
                 # normalize z with mean, std
-                z = torch.tensor(((T - idx) - means[idx]) / stds[idx])
+                z = torch.tensor((difs[idx] - means[idx]) / stds[idx])
                 loss += mse(z, v[actions[idx]]) - (torch.tensor(pis[idx]) * torch.log(p + EPS)).sum()
             loss /= size
             loss.backward()
@@ -131,7 +134,7 @@ class MCTSTSP:
             i += size
 
     # rollout iter_num times
-    def search(self, graph, iter_num=10, start_node=0):
+    def search(self, graph, iter_num=5, start_node=0):
         env = TSPEnv()
         graph, dist_from_prev, dist_to_start = env.initialize_with_start_node(graph, start_node)
         root_node = TSPMCTSNode(graph, dist_from_prev, dist_to_start, self)
