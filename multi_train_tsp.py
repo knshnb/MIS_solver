@@ -14,7 +14,7 @@ layer_num = 6
 feature = 8
 node = 100
 iter_p = 5
-epoch = 100
+epoch = 200
 train_method = "train2"
 
 file_prefix = "{}_{}_{}_{}_{}_{}_{}".format(file_identifier, layer_num, feature, node, iter_p, epoch, train_method)
