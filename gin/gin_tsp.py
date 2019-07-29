@@ -26,7 +26,9 @@ class GIN3(torch.nn.Module):
         # degree information
         # cur = torch.tensor(adj.sum(axis=0).reshape(adj.shape[0], 1))
         cur = torch.Tensor([dist_from_prev, dist_to_start]).t()
-        # 注意: なんかadj[i][i] = 1みたいなのを消した
+        adj = adj.copy()
+        for i in range(adj.shape[0]):
+            adj[i][i] = 1
         adj = torch.from_numpy(adj).to(device)
         cur = cur.to(device)
         for i, layer in enumerate(self.layers):
