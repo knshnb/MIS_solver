@@ -29,9 +29,9 @@ class MCTSTSPTrainer:
         print(result)
         self.test_result.append(result)
 
-    def save_test_result(self):
+    def save_test_result(self, suffix='final'):
         os.makedirs("log", exist_ok=True)
-        with open("log/{}.pickle".format(self.filename), mode="wb") as f:
+        with open("log/{}_{}.pickle".format(self.filename, suffix), mode="wb") as f:
             pickle.dump(self.test_result, f)
 
     def save_model(self, suffix='final'):

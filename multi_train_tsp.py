@@ -14,8 +14,8 @@ layer_num = 6
 feature = 8
 node = 100
 iter_p = 5
-epoch = 200
-train_method = "train2"
+epoch = 100
+train_method = "train1"
 
 file_prefix = "{}_{}_{}_{}_{}_{}_{}".format(file_identifier, layer_num, feature, node, iter_p, epoch, train_method)
 
@@ -40,6 +40,7 @@ def train(idx):
             trainer.test()
             Timer.end('test')
             trainer.save_model(i)
+            trainer.save_test_result(i)
 
         Timer.start('train')
         tmp = 0.01 ** (1 / epoch)
