@@ -2,7 +2,7 @@ from multiprocessing import Pool
 from config import device
 import numpy as np
 import torch
-from utils.graph import read_euc_2d_graph, generate_random_graph_tsp
+from utils.graph import read_euc_2d_graph, generate_random_graph_tsp, convert_coordinates_to_graph
 from mcts.mcts import MCTS
 from mcts.mcts_trainer_tsp import MCTSTSPTrainer
 from gin.gin_tsp import GIN3
@@ -26,7 +26,12 @@ def train(idx):
     np.random.seed()
     torch.manual_seed(idx)
     # test_graphs = [read_euc_2d_graph(f) for f in test_files]
-    test_graphs = [generate_random_graph_tsp(node) for _ in range(1)]
+    # test_graphs = [generate_random_graph_tsp(node) for _ in range(1)]
+    N = 50
+    coords = []
+    for i in range(N):
+        coords.append([i, 0])
+    test_graphs = [convert_coordinates_to_graph(N, coords)]
 
     gnn = GIN3(layer_num=layer_num, feature=feature)
     gnn.to(device)
@@ -70,9 +75,9 @@ def train(idx):
     trainer.save_test_result()
 
 if __name__ == "__main__":
-    print("train start {}".format(file_prefix))
-    pool = Pool()
-    pool.map(train, list(range(8)))
-    pool.close()
-    pool.join()
+    # print("train start {}".format(file_prefix))
+    # pool = Pool()
+    # pool.map(train, list(range(8)))
+    # pool.close()
+    # pool.join()
     train(0)
