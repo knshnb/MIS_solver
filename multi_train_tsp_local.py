@@ -13,7 +13,7 @@ import datetime
 file_identifier = "tsp"
 layer_num = 10
 feature = 8
-node = 50
+node = 40
 iter_p = 5
 epoch = 100
 train_method = "train1"
@@ -26,7 +26,7 @@ def train(idx):
     np.random.seed()
     torch.manual_seed(idx)
     # test_graphs = [read_euc_2d_graph(f) for f in test_files]
-    test_graphs = [generate_random_graph_tsp(node) for _ in range(10)]
+    test_graphs = [generate_random_graph_tsp(node) for _ in range(1)]
 
     gnn = GIN3(layer_num=layer_num, feature=feature)
     gnn.to(device)
@@ -34,11 +34,12 @@ def train(idx):
 
     Timer.start('all')
 
+    orig_graph, scale = test_graphs[0]
     for i in range(epoch):
         print("epoch: ", i)
-        graph, scale = generate_random_graph_tsp(node)
-        graph = graph.adj
-        if i % 5 == 0:
+        # graph, scale = generate_random_graph_tsp(node)
+        graph = orig_graph.adj
+        if True:
             Timer.start('test')
             trainer.test()
             Timer.end('test')
@@ -74,3 +75,4 @@ if __name__ == "__main__":
     pool.map(train, list(range(8)))
     pool.close()
     pool.join()
+    train(0)
