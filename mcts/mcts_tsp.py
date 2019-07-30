@@ -47,9 +47,9 @@ class MCTSTSP:
             if node.is_end(): break
             v = node.best_child()
             if node.graph.shape[0] == 1:
-                dists.append(1 / node.dist_from_prev[v] + 1 / node.dist_to_start[v])
+                dists.append(node.dist_from_prev[v] + node.dist_to_start[v])
             else:
-                dists.append(1 / node.dist_from_prev[v])
+                dists.append(node.dist_from_prev[v])
             if node.children[v] is None:
                 env = TSPEnv()
                 # start_nodeどっかで保持しておきたいね。とりあえずここは無理やり0にしておく
@@ -134,7 +134,7 @@ class MCTSTSP:
             i += size
 
     # rollout iter_num times
-    def search(self, graph, iter_num=5, start_node=0):
+    def search(self, graph, iter_num=10, start_node=0):
         env = TSPEnv()
         graph, dist_from_prev, dist_to_start = env.initialize_with_start_node(graph, start_node)
         root_node = TSPMCTSNode(graph, dist_from_prev, dist_to_start, self)

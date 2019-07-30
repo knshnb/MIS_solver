@@ -38,10 +38,10 @@ class TSPEnv:
         n = self.A.shape[0]
         self.ans.append(self.to_vertex[action])
         dif = 0
-        dif -= 1 / self.dist_from_prev[action]
+        dif -= self.dist_from_prev[action]
 
         if n == 1:
-            dif -= 1 / self.dist_to_start[action]
+            dif -= self.dist_to_start[action]
         
         mask = np.arange(n) != action
         self.to_vertex = self.to_vertex[mask]

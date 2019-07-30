@@ -66,7 +66,7 @@ def convert_coordinates_to_graph(n, coords):
             # TSPLIB rule
             d = ((coords[i][0] - coords[j][0]) ** 2 + (coords[i][1] - coords[j][1]) ** 2) ** 0.5
             # take inverse to weigh nearness
-            g.add_edge(i, j, 1 / d)
+            g.add_edge(i, j, d)
     return g, scale
 
 def generate_random_graph(n, m):

@@ -45,8 +45,8 @@ def randomplay_tsp(graph, dist_from_prev, dist_to_start):
     vs = [i for i in range(n)]
     np.random.shuffle(vs)
     ret = 0
-    ret -= 1 / dist_from_prev[vs[0]]
+    ret -= dist_from_prev[vs[0]]
     for i in range(1, n):
-        ret -= 1 / graph[vs[i - 1]][vs[i]]
-    ret -= 1 / dist_to_start[vs[-1]]
+        ret -= graph[vs[i - 1]][vs[i]]
+    ret -= dist_to_start[vs[-1]]
     return ret
