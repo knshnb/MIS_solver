@@ -4,6 +4,8 @@ from gin.mlp import MLP
 import numpy as np
 
 # GIN is not supported on GPU
+
+
 class GIN(torch.nn.Module):
     def __init__(self, layer_num=2, feature=8, M=1, dropout=0.5):
         super(GIN, self).__init__()
@@ -29,10 +31,14 @@ class GIN(torch.nn.Module):
         return torch.nn.functional.softmax(x, dim=0)
 
 # avoid nan on torch.sqrt(0) in torch.std
+
+
 def my_std(a, mean):
     return torch.sqrt((a - mean).pow(2).mean() + 1e-10)
 
 # policy and value network for MCTS
+
+
 class GIN3(torch.nn.Module):
     def __init__(self, layer_num=2, feature=8, M=1, dropout=0.5):
         super(GIN3, self).__init__()
@@ -67,15 +73,18 @@ class GIN3(torch.nn.Module):
                 x.append(i)
                 y.append(i)
             m = len(x)
-            adj = torch.sparse.FloatTensor(torch.LongTensor([x, y]), torch.Tensor(np.ones(m)), torch.Size(list(adj.shape))).to(device)
+            adj = torch.sparse.FloatTensor(torch.LongTensor([x, y]), torch.Tensor(
+                np.ones(m)), torch.Size(list(adj.shape))).to(device)
 
         cur = cur.to(device)
         for i, layer in enumerate(self.layers):
             cur = layer(cur, adj)
             cur = torch.nn.functional.relu(cur)
-            cur = torch.nn.functional.dropout(cur, self.dropout, training=self.training)
-        
-        policy = torch.nn.functional.softmax(self.policy_output_layer(cur, adj), dim=0)[:, 0]
+            cur = torch.nn.functional.dropout(
+                cur, self.dropout, training=self.training)
+
+        policy = torch.nn.functional.softmax(
+            self.policy_output_layer(cur, adj), dim=0)[:, 0]
         value = self.value_output_layer(cur, adj)[:, 0]
         # normalize value (mean 0, std 1)
         value_mean = value.mean()

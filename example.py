@@ -9,7 +9,8 @@ from utils.timer import Timer
 from utils.counter import Counter
 
 if __name__ == "__main__":
-    test_graphs = [read_graph("data/random/100_250_{}".format(i)).adj for i in range(5)]
+    test_graphs = [read_graph(
+        "data/random/100_250_{}".format(i)).adj for i in range(5)]
 
     gnn = GIN3(layer_num=6)
     gnn.to(device)

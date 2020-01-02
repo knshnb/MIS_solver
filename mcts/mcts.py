@@ -12,9 +12,11 @@ from utils.nodehash import NodeHash
 
 EPS = 1e-30  # cross entropy loss: pi * log(EPS + p) (in order to avoid log(0))
 
+
 class MCTS:
     def __init__(self, gnn, performance=False):
-        self.optimizer = torch.optim.Adam(gnn.parameters(), lr=0.003, weight_decay=1e-6)
+        self.optimizer = torch.optim.Adam(
+            gnn.parameters(), lr=0.003, weight_decay=1e-6)
         self.gnn = gnn
         self.nodehash = NodeHash(5000)
         self.gnnhash = GNNHash()
@@ -35,7 +37,8 @@ class MCTS:
 
     def update_Q(self, node, V, idx, method):
         if method == "mean":
-            node.Q[idx] = (node.Q[idx] * node.visit_cnt[idx] + V) / (node.visit_cnt[idx] + 1)
+            node.Q[idx] = (node.Q[idx] * node.visit_cnt[idx] +
+                           V) / (node.visit_cnt[idx] + 1)
         elif method == "max":
             node.Q[idx] = max(node.Q[idx], V)
         elif method == "min":
@@ -48,13 +51,15 @@ class MCTS:
         v = -1
         finish = False
         while not finish:
-            if node.is_end(): break
+            if node.is_end():
+                break
             v = node.best_child()
             if node.children[v] is None:
                 env = MISEnv() if use_dense else MISEnv_Sparse()
                 env.set_graph(node.graph)
                 next_graph, r, done, info = env.step(v)
-                node.children[v] = MCTSNode(next_graph, self, idx=v, parent=node)
+                node.children[v] = MCTSNode(
+                    next_graph, self, idx=v, parent=node)
                 if stop_at_leaf:
                     finish = True
             node = node.children[v]
@@ -94,7 +99,8 @@ class MCTS:
             node = MCTSNode(graph, self)
             means.append(node.reward_mean)
             stds.append(node.reward_std)
-            pi = self.get_improved_pi(node, TAU, iter_p=iter_p, stop_at_leaf=stop_at_leaf)
+            pi = self.get_improved_pi(
+                node, TAU, iter_p=iter_p, stop_at_leaf=stop_at_leaf)
             action = np.random.choice(n, p=pi)
             graphs.append(graph)
             actions.append(action)
@@ -117,7 +123,8 @@ class MCTS:
                 n, _ = graphs[idx].shape
                 # normalize z with mean, std
                 z = torch.tensor(((T - idx) - means[idx]) / stds[idx])
-                loss += mse(z, v[actions[idx]]) - (torch.tensor(pis[idx]) * torch.log(p + EPS)).sum()
+                loss += mse(z, v[actions[idx]]) - \
+                    (torch.tensor(pis[idx]) * torch.log(p + EPS)).sum()
             loss /= size
             loss.backward()
             self.optimizer.step()
@@ -129,7 +136,8 @@ class MCTS:
         ans = []
         for i in range(iter_num):
             r = self.rollout(root_node)
-            if self.performance: print(r)
+            if self.performance:
+                print(r)
             ans.append(r)
         return ans
 
@@ -174,7 +182,8 @@ class MCTS:
         while not done:
             n, _ = graph.shape
             node = MCTSNode(graph, self)
-            pi = self.get_improved_pi(node, TAU, iter_p=iter_p, stop_at_leaf=True)
+            pi = self.get_improved_pi(
+                node, TAU, iter_p=iter_p, stop_at_leaf=True)
             action = np.random.choice(n, p=pi)
             graph, reward, done, info = env.step(action)
         return reward

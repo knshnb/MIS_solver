@@ -8,6 +8,7 @@ from mcts.mcts import MCTS
 from gin.gin import GIN3
 from utils.timer import Timer
 
+
 def best_gin(idx):
     gnn = GIN3(layer_num=6, feature=8)
     gnn.load_state_dict(torch.load("model/modified_p5_{}th.pth".format(idx)))
@@ -15,8 +16,10 @@ def best_gin(idx):
     gnn.eval()
     return gnn
 
+
 def best_gins():
     return [best_gin(idx) for idx in range(10)]
+
 
 def use_model(t):
     gnn, name, graph = t
@@ -34,6 +37,7 @@ def use_model(t):
     Timer.print()
 
     return max(result)
+
 
 if __name__ == "__main__":
     gnns = best_gins()

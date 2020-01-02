@@ -1,10 +1,12 @@
 import math
 import torch
 
+
 class GraphConvolution(torch.nn.Module):
     def __init__(self, in_features, out_features):
         super(GraphConvolution, self).__init__()
-        self.weight = torch.nn.Parameter(torch.FloatTensor(in_features, out_features))
+        self.weight = torch.nn.Parameter(
+            torch.FloatTensor(in_features, out_features))
         self.reset_parameters()
 
     def forward(self, input, adj):

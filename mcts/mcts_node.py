@@ -13,6 +13,7 @@ from utils.gnnhash import GNNHash
 ALPHA = 2  # ucb(s,a) = Q(s,a) + ALPHA * sqrt(N(s,a)) * P(s,a) / (1 + N(s,a))
 EPS = 1e-10
 
+
 class MCTSNode:
     def __init__(self, graph, mcts, idx=-1, parent=None):
         n, _ = graph.shape
@@ -27,7 +28,7 @@ class MCTSNode:
             hash = self.mcts.nodehash.hash(self.graph)
             if self.mcts.gnnhash.has(hash):
                 self.P, self.Q = self.mcts.gnnhash.get(hash)
-            else:                
+            else:
                 Timer.start('gnn')
                 with torch.no_grad():
                     self.P, self.Q = self.mcts.gnn(self.graph)
@@ -37,11 +38,13 @@ class MCTSNode:
                 self.mcts.gnnhash.save(hash, self.P, self.Q.copy())
 
             if self.mcts.nodehash.has(hash):
-                self.reward_mean, self.reward_std = self.mcts.nodehash.get(hash)
+                self.reward_mean, self.reward_std = self.mcts.nodehash.get(
+                    hash)
             else:
                 # calculate reward mean and std by random sampling
                 NUM = min(max(10, 2 * n), 100)
-                if self.mcts.performance: NUM = 10
+                if self.mcts.performance:
+                    NUM = 10
                 rewards = np.empty(NUM)
                 ss = make_adj_set(graph)
                 Timer.start('sample')
@@ -53,7 +56,8 @@ class MCTSNode:
                 # std shoud not be 0!
                 self.reward_std = rewards.std(ddof=1) + EPS
                 assert not np.isnan(self.reward_std)
-                self.mcts.nodehash.save(hash, self.reward_mean, self.reward_std)
+                self.mcts.nodehash.save(
+                    hash, self.reward_mean, self.reward_std)
 
     def is_end(self):
         return self.graph.shape[0] == 0
@@ -69,7 +73,8 @@ class MCTSNode:
 
     def best_child(self):
         n, _ = self.graph.shape
-        ucb = self.Q + ALPHA * np.sqrt(self.visit_cnt.sum()) * self.P / (1 + self.visit_cnt)
+        ucb = self.Q + ALPHA * \
+            np.sqrt(self.visit_cnt.sum()) * self.P / (1 + self.visit_cnt)
         return np.argmax(ucb)
 
     def pi(self, TAU):

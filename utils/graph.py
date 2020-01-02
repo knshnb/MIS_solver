@@ -4,13 +4,14 @@ from config import *
 # xp = chainer.cuda.cupy if use_gpu else np
 xp = np
 
+
 class Graph:
     def __init__(self, n, is_dense):
         self.n = n
         self.m = 0
         self.is_dense = is_dense
         self.tmp = [set() for _ in range(n)]
-    
+
     def add_edge(self, a, b):
         assert 0 <= a < self.n and 0 <= b < self.n
         self.tmp[a].add(b)
@@ -36,7 +37,9 @@ class Graph:
                         x.append(b)
                         y.append(a)
                         self.m += 1
-            self.adj = coo_matrix((np.ones(2 * self.m, dtype=np.float32), (np.array(x), np.array(y))), shape=(self.n, self.n))
+            self.adj = coo_matrix((np.ones(
+                2 * self.m, dtype=np.float32), (np.array(x), np.array(y))), shape=(self.n, self.n))
+
 
 def generate_random_graph(n, m):
     g = Graph(n, use_dense)
@@ -52,6 +55,7 @@ def generate_random_graph(n, m):
     assert g.m == m
     return g
 
+
 def read_graph(filename):
     f = open(filename)
     text = f.readlines()
@@ -65,6 +69,7 @@ def read_graph(filename):
     g.build()
     f.close()
     return g
+
 
 def write_graph(graph, filename):
     n, _ = graph.adj.shape
@@ -88,8 +93,10 @@ def write_graph(graph, filename):
         f.write("{} {}\n".format(edges[i][0], edges[i][1]))
     f.close()
 
+
 def read_test_graphs(size):
     return [read_graph("data/random/{}_{}_{}".format(size, int(size * 2.5), idx)).adj for idx in range(10)]
+
 
 if __name__ == "__main__":
     # (n, m)
@@ -102,4 +109,5 @@ if __name__ == "__main__":
     for graph in GRAPHS:
         for idx in range(10):
             g = generate_random_graph(graph[0], graph[1])
-            write_graph(g, "data/random/{}_{}_{}".format(graph[0], graph[1], idx))
+            write_graph(
+                g, "data/random/{}_{}_{}".format(graph[0], graph[1], idx))

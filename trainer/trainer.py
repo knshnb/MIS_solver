@@ -7,11 +7,13 @@ import numpy as np
 # xp = chainer.cuda.cupy if use_gpu else np
 xp = np
 
+
 class Trainer:
     def __init__(self, policy, test_graphs=[]):
         self.env = MISEnv() if use_dense else MISEnv_Sparse()
         self.policy = policy
-        self.optimizer = torch.optim.Adam(self.policy.model.parameters(), lr=0.01)
+        self.optimizer = torch.optim.Adam(
+            self.policy.model.parameters(), lr=0.01)
         self.test_graphs = test_graphs
         self.rewards = []
 
@@ -29,9 +31,10 @@ class Trainer:
                     action, prob = self.policy.act(graph)
                     log_probs[n] += torch.log(prob)
                     graph, reward, done, info = self.env.step(action)
-                
+
                 rewards[n] = reward
-            if print_log: print(rewards)
+            if print_log:
+                print(rewards)
             reward_sum += rewards.detach().numpy().sum()
             reward_mean = reward_sum / ((epoch + 1) * batch)
 

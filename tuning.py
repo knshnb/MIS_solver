@@ -11,8 +11,11 @@ from utils.counter import Counter
 import optuna
 
 # minimize the return value
+
+
 def objective(trial):
-    test_graphs = [read_graph("data/random/1000_2500_{}".format(i)).adj for i in range(5)]
+    test_graphs = [read_graph(
+        "data/random/1000_2500_{}".format(i)).adj for i in range(5)]
 
     layer_num = trial.suggest_int('layer_num', 2, 20)
     feature = trial.suggest_int('feature', 5, 10)
@@ -20,7 +23,8 @@ def objective(trial):
 
     gnn = GIN3(layer_num=layer_num, feature=feature)
     gnn.to(device)
-    trainer = MCTSTrainer(gnn, test_graphs, "optuna_tmp_100_tran2_{}_{}_{}".format(layer_num, feature, beta))
+    trainer = MCTSTrainer(gnn, test_graphs, "optuna_tmp_100_tran2_{}_{}_{}".format(
+        layer_num, feature, beta))
 
     Timer.start('all')
     ans = []
@@ -41,7 +45,7 @@ def objective(trial):
     Timer.print()
     trainer.save_model()
     trainer.save_test_result()
-    
+
     return -score
 
 

@@ -19,7 +19,7 @@ for _ in range(100):
             dense.add_edge(a, b)
             adj[a].add(b)
             adj[b].add(a)
-    
+
     sparse.build()
     dense.build()
 

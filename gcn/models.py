@@ -2,12 +2,14 @@ import numpy as np
 import torch
 from gcn.layers import GraphConvolution
 
+
 class GCN(torch.nn.Module):
     def __init__(self, layer_num=2, feature=8, M=1, dropout=0.5):
         super(GCN, self).__init__()
         self.layers = torch.nn.ModuleList()
         for l in range(layer_num - 1):
-            self.layers.append(GraphConvolution(feature if l != 0 else 1, feature))
+            self.layers.append(GraphConvolution(
+                feature if l != 0 else 1, feature))
         self.layers.append(GraphConvolution(feature, M))
         self.dropout = dropout
 

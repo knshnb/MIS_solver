@@ -11,6 +11,8 @@ graph is represented by adjacency matrix
 - ans: current answer for MIS
 - reward: current number of vertices in answer
 """
+
+
 class MISEnv_Sparse:
     def __init__(self):
         pass
@@ -18,14 +20,14 @@ class MISEnv_Sparse:
     def set_graph(self, graph):
         self.original_graph = graph
         self.reset()
-    
+
     def reset(self):
         self.A = self.original_graph
         self.to_vertex = np.arange(self.A.shape[0], dtype=np.int)
         self.ans = []
         self.reward = 0
         return self.A
-    
+
     def step(self, action):
         Timer.start('env')
         self.ans.append(self.to_vertex[action])
@@ -63,6 +65,7 @@ class MISEnv_Sparse:
                 x.append(mp[a])
                 y.append(mp[b])
                 M += 1
-        self.A = coo_matrix((np.ones(M, dtype=np.float32), (np.array(x), np.array(y))), shape=(N, N))
+        self.A = coo_matrix((np.ones(M, dtype=np.float32),
+                             (np.array(x), np.array(y))), shape=(N, N))
         Timer.end('env')
         return self.A, self.reward, N == 0, {'ans': self.ans}

@@ -2,6 +2,7 @@ import sys
 import pickle
 import glob
 
+
 def score(filename):
     with open(filename, mode="rb") as f:
         data = pickle.load(f)
@@ -9,6 +10,7 @@ def score(filename):
     for rewards in data[-1]:
         acc += max(rewards)
     return acc
+
 
 if __name__ == "__main__":
     files = glob.glob(sys.argv[1] + "*")

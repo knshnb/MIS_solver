@@ -14,11 +14,13 @@ xp = np
     return vertex and probability based on the policy
 """
 
+
 def calc_B(adj):
     n, _ = adj.shape
     adj += xp.eye(n)
     D = xp.diag(1 / xp.sqrt(xp.sum(adj, axis=0)))
     return D.dot(adj.dot(D)).astype(xp.float32)
+
 
 class GNNPolicy:
     def __init__(self, gcn):
@@ -43,7 +45,8 @@ class GNNPolicy:
 
     def predict_act(self, adj):
         n, _ = adj.shape
-        if normalize_adj : adj = calc_B(adj)
+        if normalize_adj:
+            adj = calc_B(adj)
         prob = self.model(adj)
         if use_gpu:
             v = np.random.choice(n, p=prob.data[:, 0].get())

@@ -8,6 +8,8 @@ import numpy as np
 - predict_act: graph -> (vertex, probability)
     return vertex and probability based on the policy
 """
+
+
 class BasePolicy:
     def best_act(self, graph):
         degrees = graph.sum(axis=0)

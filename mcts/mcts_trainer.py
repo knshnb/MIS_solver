@@ -11,6 +11,7 @@ from utils.timer import Timer
 from utils.gnnhash import GNNHash
 from utils.nodehash import NodeHash
 
+
 class MCTSTrainer:
     def __init__(self, gnn, test_graphs, filename):
         self.mcts = MCTS(gnn)
@@ -24,7 +25,8 @@ class MCTSTrainer:
 
     # rollout only until leaf
     def train2(self, graph, TAU, batch_size=10, iter_p=2):
-        self.mcts.train(graph, TAU, batch_size=batch_size, stop_at_leaf=True, iter_p=2)
+        self.mcts.train(graph, TAU, batch_size=batch_size,
+                        stop_at_leaf=True, iter_p=2)
 
     def test(self):
         result = [self.mcts.search(graph) for graph in self.test_graphs]
@@ -38,4 +40,5 @@ class MCTSTrainer:
 
     def save_model(self):
         os.makedirs("model", exist_ok=True)
-        torch.save(self.mcts.gnn.state_dict(), "model/{}.pth".format(self.filename))
+        torch.save(self.mcts.gnn.state_dict(),
+                   "model/{}.pth".format(self.filename))

@@ -19,12 +19,15 @@ iter_p = 5
 epoch = 50
 train_method = "train2"
 
-file_prefix = "{}_{}_{}_{}_{}_{}_{}_{}_{}".format(file_identifier, layer_num, feature, test_graph, node, edge, iter_p, epoch, train_method)
+file_prefix = "{}_{}_{}_{}_{}_{}_{}_{}_{}".format(
+    file_identifier, layer_num, feature, test_graph, node, edge, iter_p, epoch, train_method)
+
 
 def train(idx):
     np.random.seed()
     torch.manual_seed(idx)
-    test_graphs = [read_graph("data/random/{}_{}".format(test_graph, i)).adj for i in range(5)]
+    test_graphs = [read_graph(
+        "data/random/{}_{}".format(test_graph, i)).adj for i in range(5)]
 
     gnn = GIN3(layer_num=layer_num, feature=feature)
     gnn.to(device)
@@ -61,6 +64,7 @@ def train(idx):
 
     trainer.save_model()
     trainer.save_test_result()
+
 
 if __name__ == "__main__":
     print("train start {}".format(file_prefix))

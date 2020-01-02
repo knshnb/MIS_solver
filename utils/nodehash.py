@@ -2,6 +2,7 @@ from utils.timer import Timer
 from config import use_dense
 import numpy as np
 
+
 class NodeHash:
     def __init__(self, MAX_N):
         Timer.start('init hash')
@@ -36,7 +37,8 @@ class NodeHash:
         for i in range(m):
             r = row[i]
             c = col[i]
-            if r > c: continue
+            if r > c:
+                continue
             k = (2 * n - 1 - r) * r // 2 + c - 1 - r
             k = int(k)
             ret -= pow(2, k, mod)
@@ -68,9 +70,9 @@ class NodeHash:
 
     def has(self, hash):
         return hash in self.items
-    
+
     def save(self, hash, reward_mean, reward_std):
         self.items[hash] = [reward_mean, reward_std]
-    
+
     def get(self, hash):
         return self.items[hash]

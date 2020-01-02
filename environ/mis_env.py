@@ -12,6 +12,8 @@ graph is represented by adjacency matrix
 - ans: current answer for MIS
 - reward: current number of vertices in answer
 """
+
+
 class MISEnv:
     def __init__(self):
         pass

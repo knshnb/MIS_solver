@@ -1,6 +1,7 @@
 import numpy as np
 from config import use_dense
 
+
 def make_adj_set_sparse(adj):
     n, _ = adj.shape
     row = adj.row
@@ -15,6 +16,7 @@ def make_adj_set_sparse(adj):
             ss[b].add(a)
     return ss
 
+
 def make_adj_set(adj):
     if not use_dense:
         return make_adj_set_sparse(adj)
@@ -26,6 +28,7 @@ def make_adj_set(adj):
                 ss[i].add(j)
                 ss[j].add(i)
     return ss
+
 
 def randomplay(ss):
     n = len(ss)
