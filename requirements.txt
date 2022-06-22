@@ -10,7 +10,7 @@ kiwisolver==1.1.0
 Mako==1.0.10
 MarkupSafe==1.1.1
 matplotlib==3.0.3
-numpy==1.16.3
+numpy==1.22.0
 optuna==0.10.0
 pandas==0.24.2
 pbr==5.2.0
